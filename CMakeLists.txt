@@ -7,6 +7,8 @@ list(APPEND CMAKE_MODULE_PATH
      "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 
 include(AddCompilerFlags)
+include(CheckCXXSymbolExists)
+include(CheckIncludeFileCXX)
 
 set(NOTIFY_VERSION_MAJOR 0)
 set(NOTIFY_VERSION_MINOR 0)
@@ -127,6 +129,38 @@ if(APPLE)
        -Wno-error=deprecated-declarations
        -Qunused-arguments
    )
+endif()
+
+if(NOT NOTIFY_GNU_SOURCE)
+   check_cxx_symbol_exists(__GNU_LIBRARY__ "features.h" NOTIFY_GNU_SOURCE)
+   if(NOT NOTIFY_GNU_SOURCE)
+      unset(NOTIFY_GNU_SOURCE CACHE)
+      check_cxx_symbol_exists(_GNU_SOURCE "features.h" NOTIFY_GNU_SOURCE)
+   endif()
+endif()
+
+if(NOT NOTIFY_GNU_SOURCE)
+   add_definitions(-DNOTIFY_GNU_SOURCE)
+endif()
+
+check_include_file_cxx(sys/types.h NOTIFY_HAVE_SYS_TYPES_H)
+if(NOTIFY_HAVE_SYS_TYPES_H)
+   list(APPEND CMAKE_EXTRA_INCLUDE_FILES sys/types.h)
+endif()
+
+check_include_file_cxx(sys/socket.h NOTIFY_HAVE_SYS_SOCKET_H)
+if(NOTIFY_HAVE_SYS_SOCKET_H)
+   list(APPEND CMAKE_EXTRA_INCLUDE_FILES sys/socket.h)
+endif()
+
+check_include_file_cxx(netinet/in.h NOTIFY_HAVE_NETINET_IN_H)
+if(NOTIFY_HAVE_NETINET_IN_H)
+   list(APPEND CMAKE_EXTRA_INCLUDE_FILES netinet/in.h)
+endif()
+
+check_include_file_cxx(netinet/in6.h NOTIFY_HAVE_NETINET_IN6_H)
+if()
+   list(APPEND CMAKE_EXTRA_INCLUDE_FILES netinet/in6.h)
 endif()
 
 include_directories(BEFORE
