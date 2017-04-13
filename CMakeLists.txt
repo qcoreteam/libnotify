@@ -9,6 +9,7 @@ list(APPEND CMAKE_MODULE_PATH
 include(AddCompilerFlags)
 include(CheckCXXSymbolExists)
 include(CheckIncludeFileCXX)
+include(CheckFunctionExists)
 
 set(NOTIFY_VERSION_MAJOR 0)
 set(NOTIFY_VERSION_MINOR 0)
@@ -67,6 +68,10 @@ option(NOTIFY_OPT_DISABLE_TESTS
 option(NOTIFY_OPT_ENABLE_COVERAGE
        "Enable running gcov to get a test coverage report (only works with GCC or Clang)
 Make sure to enable -DCMAKE_BUILD_TYPE=Debug as well"
+       OFF)
+
+option(NOTIFY_OPT_DISABLE_CLOCK_GETTIME
+       "Do not use clock_gettime event if it is available"
        OFF)
 
 if(NOTIFY_OPT_ENABLE_VERBOSE_DEBUG)
@@ -201,7 +206,8 @@ if(NOTIFY_HAVE_SYS_TIME_H)
    list(APPEND CMAKE_EXTRA_INCLUDE_FILESsys/time.h)
 endif()
 check_include_file_cxx(sys/uio.h NOTIFY_HAVE_SYS_UIO_H)
-check_include_file_cxx("sys/types.h;ifaddrs.h" NOTIFY_HAVE_SYS_IFADDRS_H)
+check_include_file_cxx(sys/types.h NOTIFY_HAVE_SYS_TYPES_H)
+check_include_file_cxx(ifaddrs.h NOTIFY_HAVE_SYS_IFADDRS_H)
 check_include_file_cxx(mach/mach_time.h NOTIFY_HAVE_MACH_MACH_TIME_H)
 check_include_file_cxx(netinet/tcp.h NOTIFY_HAVE_NETINET_TCP_H)
 check_include_file_cxx(sys/wait.h NOTIFY_HAVE_WAIT_H)
@@ -209,6 +215,18 @@ check_include_file_cxx(sys/resource.h NOTIFY_SYS_RESOURCE_H)
 check_include_file_cxx(sys/sysctl.h NOTIFY_SYS_SYSCTL_H)
 check_include_file_cxx(sys/timerfd.h NOTIFY_SYS_TIMERFD_H)
 check_include_file_cxx(errno.h NOTIFY_HAVE_ERRNO_H)
+
+check_function_exists(epoll_create NOTIFY_HAVE_EPOLL)
+check_function_exists(epoll_ctl NOTIFY_HAVE_EPOLL_CTL)
+check_function_exists(eventfd NOTIFY_HAVE_EVENTFD)
+if(NOT NOTIFY_DISABLE_CLOCK_GETTIME)
+   check_function_exists(clock_gettime NOTIFY_HAVE_CLOCK_GETTIME)
+endif()
+check_function_exists(fcntl NOTIFY_HAVE_FCNTL)
+check_function_exists(getaddrinfo NOTIFY_HAVE_GETADDRINFO)
+check_function_exists(getnameinfo NOTIFY_HAVE_GETNAMEINFO)
+check_function_exixts(gettimeofday NOTIFY_HAVE_GETTIMEOFDAY)
+check_function_exists(getprotobynumber NOTIFY_HAVE_GETPROTOBYNUMBER)
 
 include_directories(BEFORE
                     ${NOTIFY_INCLUDE_DIR}
