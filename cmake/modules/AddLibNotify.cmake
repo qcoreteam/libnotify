@@ -11,11 +11,16 @@ macro(notify_add_executable name)
       notify_setup_rpath(${name})
    endif()
    notify_add_link_opts(${name})
+   # Do not add -Dname_EXPORTS to the command-line when building files in this
+   # target. Doing so is actively harmful for the modules build because it
+   # creates extra module variants, and not useful because we don't use these
+   # macros.
+   set_target_properties( ${name} PROPERTIES DEFINE_SYMBOL "" )
    set(EXCLUDE_FROM_ALL OFF)
    set_output_directory(${name}
                         BINARY_DIR ${NOTIFY_RUNTIME_OUTPUT_INTDIR}
                         LIBRARY_DIR ${NOTIFY_LIBRARY_OUTPUT_INTDIR})
-
+   
    if(NOTIFY_COMMON_DEPENDS)
       add_dependencies(${name} ${NOTIFY_COMMON_DEPENDS})
    endif()
@@ -36,13 +41,18 @@ function(notify_add_unittest test_suite test_name)
    if (NOT NOTIFY_OPT_ENABLE_THREADS)
       list(APPEND NOTIFY_COMPILE_DEFINITIONS GTEST_HAS_PTHREAD=0)
    endif()
-   add_notify_executable(${test_name} ${ARGN})
-   # Do not add -Dname_EXPORTS to the command-line when building files in this
-   # target. Doing so is actively harmful for the modules build because it
-   # creates extra module variants, and not useful because we don't use these
-   # macros.
-   set_target_properties(${name} PROPERTIES DEFINE_SYMBOL "")
-   
+   notify_add_executable(${test_name} NO_INSTALL_RPATH ${ARGN})
+   set(outdir ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR})
+   set_output_directory(${test_name} BINARY_DIR ${outdir} LIBRARY_DIR ${outdir})
+   # libpthreads overrides some standard library symbols, so main
+   # executable must be linked with it in order to provide consistent
+   # API for all shared libaries loaded by this executable.
+   target_link_libraries(${test_name} gtest_main gtest ${PTHREAD_LIB})
+   add_dependencies(${test_suite} ${test_name})
+   get_target_property(test_suite_folder ${test_suite} FOLDER)
+   if (NOT ${test_suite_folder} STREQUAL "NOTFOUND")
+      set_property(TARGET ${test_name} PROPERTY FOLDER "${test_suite_folder}")
+   endif ()
 endfunction()
 
 function(notify_setup_rpath name)
