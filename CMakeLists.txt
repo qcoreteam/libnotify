@@ -12,10 +12,11 @@ include(CheckCXXSymbolExists)
 include(CheckIncludeFileCXX)
 include(CheckFunctionExists)
 include(CheckLibraryExists)
+include(DetermineGCCCompatible)
 
-set(NOTIFY_VERSION_MAJOR 0)
+set(NOTIFY_VERSION_MAJOR 1)
 set(NOTIFY_VERSION_MINOR 0)
-set(NOTIFY_VERSION_PATCH 1)
+set(NOTIFY_VERSION_PATCH 0)
 set(NOTIFY_VERSION_STAGE "alpha")
 
 set(NOTIFY_ABI_MAJOR ${NOTIFY_VERSION_MAJOR})
@@ -80,6 +81,14 @@ option(NOTIFY_OPT_DISABLE_CLOCK_GETTIME
        OFF)
 
 option(NOTIFY_OPT_ENABLE_THREADS "Use threads if available." ON)
+
+# Provide public options to globally control RTTI and EH
+option(NOTIFY_OPT_DISABLE_EXCEPTION "Disable Exception handling" OFF)
+option(NOTIFY_OPT_DISABLE_RTTI "Disable runtime type information" OFF)
+
+if(NOTIFY_OPT_DISABLE_EXCEPTION AND NOT NOTIFY_OPT_DISABLE_RTTI)
+   message(FATAL_ERROR "Exception handling requires RTTI. You must set NOTIFY_OPT_DISABLE_EXCEPTION to OFF")
+endif()
 
 set(NOTIFY_OPT_LIBDIR_SUFFIX "" CACHE STRING "Define suffix of library directory name (32/64)" )
 
@@ -310,6 +319,9 @@ if(NOT APPLE)
       set(NOTIFY_LINKER_IS_GOLD ON)
    endif()
 endif()
+
+# We use *.dylib rather than *.so on darwin.
+set(NOTIFY_PLUGIN_EXT ${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 include_directories(BEFORE
                     ${NOTIFY_INCLUDE_DIR}

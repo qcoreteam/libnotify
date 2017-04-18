@@ -1,3 +1,124 @@
+# notify_add_library(name sources...
+#   SHARED;STATIC
+#     STATIC by default w/o BUILD_SHARED_LIBS.
+#     SHARED by default w/  BUILD_SHARED_LIBS.
+#   OBJECT
+#     Also create an OBJECT library target. Default if STATIC && SHARED.
+#   MODULE
+#     Target ${name} might not be created on unsupported platforms.
+#     Check with "if(TARGET ${name})".
+#   OUTPUT_NAME name
+#     Corresponds to OUTPUT_NAME in target properties.
+#   DEPENDS targets...
+#     Same semantics as add_dependencies().
+#   LINK_COMPONENTS components...
+#     Same as the variable LLVM_LINK_COMPONENTS.
+#   LINK_LIBS lib_targets...
+#     Same semantics as target_link_libraries().
+#   ADDITIONAL_HEADERS
+#     May specify header files for IDE generators.
+#   SONAME
+#     Should set SONAME link flags and create symlinks
+#   )
+function(notify_add_library name)
+   cmake_parse_arguments(NOTIFY_ARG
+                         "MODULE;SHARED;STATIC;OBJECT;SONAME"
+                         "OUTPUT_NAME"
+                         "ADDITIONAL_HEADERS;DEPENDS;LINK_COMPONENTS;LINK_LIBS;OBJLIBS"
+                         ${ARGN})
+   list(APPEND NOTIFY_COMMON_DEPENDS ${NOTIFY_ARG_DEPENDS})
+   if(NOTIFY_ARG_ADDITIONAL_HEADERS)
+      # Pass through ADDITIONAL_HEADERS.
+      set(NOTIFY_ARG_ADDITIONAL_HEADERS ADDITIONAL_HEADERS ${NOTIFY_ARG_ADDITIONAL_HEADERS})
+   endif()
+   if(NOTIFY_ARG_OBJLIBS)
+      set(ALL_FILES ${NOTIFY_ARG_OBJLIBS})
+   else()
+      list(APPEND ALL_FILES ${NOTIFY_ARG_UNPARSED_ARGUMENTS} ${NOTIFY_ARG_ADDITIONAL_HEADERS})
+   endif()
+   
+   if(NOTIFY_ARG_MODULE)
+      if(NOTIFY_ARG_SHARED OR NOTIFY_ARG_STATIC)
+         message(WARNING "MODULE with SHARED|STATIC doesn't make sense.")
+      endif()
+   else()
+      if(BUILD_SHARED_LIBS AND NOT NOTIFY_ARG_STATIC)
+         set(NOTIFY_ARG_SHARED TRUE)
+      endif()
+      if(NOT NOTIFY_ARG_SHARED)
+         set(NOTIFY_ARG_STATIC TRUE)
+      endif()
+   endif()
+   # Generate objlib
+   if((NOTIFY_ARG_SHARED AND NOTIFY_ARG_STATIC) OR NOTIFY_OBJECT)
+      # Generate an obj library for both targets.
+      set(obj_name "obj.${name}")
+      add_library(${obj_name} OBJECT EXCLUDE_FROM_ALL
+                  ${ALL_FILES})
+      set(ALL_FILES "$<TARGET_OBJECTS:${obj_name}>")
+      # Do add_dependencies(obj) later due to CMake issue 14747.
+      set_target_properties(${obj_name} PROPERTIES FOLDER "Object Libraries")
+   endif()
+
+   if(NOTIFY_ARG_SHARED AND NOTIFY_ARG_STATIC)
+      # static
+      set(name_static "${name}_static")
+      if(NOTIFY_ARG_OUTPUT_NAME)
+         set(output_name OUTPUT_NAME "${NOTIFY_ARG_OUTPUT_NAME}")
+      endif()
+      # DEPENDS has been appended to NOTIFY_COMMON_LIBS.
+      notify_add_library(${name_static} STATIC
+                         ${output_name}
+                         OBJLIBS ${ALL_FILES} # objlib
+                         LINK_LIBS ${NOTIFY_ARG_LINK_LIBS}
+                         LINK_COMPONENTS ${NOTIFY_ARG_LINK_COMPONENTS})
+      # FIXME: Add name_static to anywhere in TARGET ${name}'s PROPERTY.
+      set(NOTIFY_ARG_STATIC)
+   endif()
+   
+   if(NOTIFY_ARG_MODULE)
+      add_library(${name} MODULE ${ALL_FILES})
+      notify_setup_rpath(${name})
+   elseif(NOTIFY_ARG_SHARED)
+      add_library(${name} SHARED ${ALL_FILES})
+      notify_setup_rpath(${name})
+   else()
+      add_library(${name} STATIC ${ALL_FILES})
+   endif()
+   set_output_directory(${name}
+                        BINARY_DIR ${NOTIFY_RUNTIME_OUTPUT_INTDIR}
+                        LIBRARY_DIR ${NOTIFY_LIBRARY_OUTPUT_INTDIR})
+   # $<TARGET_OBJECTS> doesn't require compile flags.
+   notify_add_link_opts(${name})
+   if(NOTIFY_ARG_OUTPUT_NAME)
+      set_target_properties(${name}
+                            PROPERTIES
+                            OUTPUT_NAME ${NOTIFY_ARG_OUTPUT_NAME})
+   endif()
+   
+   if(NOTIFY_ARG_MODULE)
+      set_target_properties(${name}
+                            PROPERTIES
+                            PREFIX ""
+                            SUFFIX ${NOTIFY_PLUGIN_EXT})
+   endif()
+   
+   if(NOTIFY_ARG_SHARED)
+      if(WIN32)
+         set_target_properties(${name} PROPERTIES
+                               PREFIX "")
+         # Set SOVERSION on shared libraries that lack explicit SONAME
+         # specifier, on *nix systems that are not Darwin.
+         if(UNIX AND NOT APPLE AND NOT NOTIFY_ARG_SONAME)
+            set_target_properties(${name}
+                                  PROPERTIES
+                                  # Since 1.0.0, the ABI version is indicated by the major version
+                                  SOVERSION ${NOTIFY_VERSION_MAJOR}
+                                  VERSION ${NOTIFY_VERSION_MAJOR}.${NOTIFY_VERSION_MINOR}.${NOTIFY_VERSION_PATCH}${NOTIFY_VERSION_STAGE})
+         endif()
+      endif()
+   endif()
+endfunction()
 
 macro(notify_add_executable name)
    cmake_parse_arguments(NOTIFY_ARG "NO_INSTALL_RPATH" ""
@@ -164,5 +285,22 @@ function(set_output_directory target)
       if(module_dir)
          set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${module_dir})
       endif()
+   endif()
+endfunction()
+
+function(notify_update_compile_flags name)
+   get_property(sources TARGET ${name} PROPERTY SOURCES)
+   if("${sources}" MATCHES "\\.c(;|$)")
+      set(update_src_props ON)
+   endif()
+   ## NOTIFY_REQUIRES_EXCEPTION is an internal flag individual targets can use to
+   ## force Exception handle
+   if(NOTIFY_REQUIRES_EXCEPTION OR NOT NOTIFY_OPT_DISABLE_EXCEPTION)
+      if(NOT (NOTIFY_REQUIRES_RTTI OR NOT NOTIFY_OPT_DISABLE_RTTI))
+         message(AUTHOR_WARNING "Exception handling requires RTTI. Enabling RTTI for ${name}")
+         set(NOTIFY_REQUIRES_RTTI ON)
+      endif()
+   else()
+   
    endif()
 endfunction()
