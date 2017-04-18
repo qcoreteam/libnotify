@@ -1,7 +1,8 @@
 
 macro(notify_add_executable name)
-   cmake_parse_arguments(NOTIFY_ARG "NO_INSTALL_RPATH"
+   cmake_parse_arguments(NOTIFY_ARG "NO_INSTALL_RPATH" ""
                          "DEPENDS" ${ARGN})
+   set(ALL_FILES ${NOTIFY_ARG_UNPARSED_ARGUMENTS})
    if(EXCLUDE_FROM_ALL)
       add_executable(${name} EXCLUDE_FROM_ALL ${ALL_FILES})
    else()
@@ -20,7 +21,7 @@ macro(notify_add_executable name)
    set_output_directory(${name}
                         BINARY_DIR ${NOTIFY_RUNTIME_OUTPUT_INTDIR}
                         LIBRARY_DIR ${NOTIFY_LIBRARY_OUTPUT_INTDIR})
-   
+
    if(NOTIFY_COMMON_DEPENDS)
       add_dependencies(${name} ${NOTIFY_COMMON_DEPENDS})
    endif()
@@ -47,7 +48,7 @@ function(notify_add_unittest test_suite test_name)
    # libpthreads overrides some standard library symbols, so main
    # executable must be linked with it in order to provide consistent
    # API for all shared libaries loaded by this executable.
-   target_link_libraries(${test_name} gtest_main gtest ${PTHREAD_LIB})
+   target_link_libraries(${test_name} gtest_main gtest ${PTHREAD_LIB} ${CMAKE_PROJECT_NAME})
    add_dependencies(${test_suite} ${test_name})
    get_target_property(test_suite_folder ${test_suite} FOLDER)
    if (NOT ${test_suite_folder} STREQUAL "NOTFOUND")
@@ -119,6 +120,49 @@ function(notify_add_link_opts target_name)
             set_property(TARGET ${target_name} APPEND_STRING PROPERTY
                          LINK_FLAGS " -Wl,--gc-sections")
          endif()
+      endif()
+   endif()
+endfunction()
+
+# Set each output directory according to ${CMAKE_CONFIGURATION_TYPES}.
+# Note: Don't set variables CMAKE_*_OUTPUT_DIRECTORY any more,
+# or a certain builder, for eaxample, msbuild.exe, would be confused.
+function(set_output_directory target)
+   cmake_parse_arguments(ARG "" "BINARY_DIR;LIBRARY_DIR" "" ${ARGN})
+   
+   # module_dir -- corresponding to LIBRARY_OUTPUT_DIRECTORY.
+   # It affects output of add_library(MODULE).
+   if(WIN32 OR CYGWIN)
+      # DLL platform
+      set(module_dir ${ARG_BINARY_DIR})
+   else()
+      set(module_dir ${ARG_LIBRARY_DIR})
+   endif()
+   if(NOT "${CMAKE_CFG_INTDIR}" STREQUAL ".")
+      foreach(build_mode ${CMAKE_CONFIGURATION_TYPES})
+         string(TOUPPER "${build_mode}" CONFIG_SUFFIX)
+         if(ARG_BINARY_DIR)
+            string(REPLACE ${CMAKE_CFG_INTDIR} ${build_mode} bi ${ARG_BINARY_DIR})
+            set_target_properties(${target} PROPERTIES "RUNTIME_OUTPUT_DIRECTORY_${CONFIG_SUFFIX}" ${bi})
+         endif()
+         if(ARG_LIBRARY_DIR)
+            string(REPLACE ${CMAKE_CFG_INTDIR} ${build_mode} li ${ARG_LIBRARY_DIR})
+            set_target_properties(${target} PROPERTIES "ARCHIVE_OUTPUT_DIRECTORY_${CONFIG_SUFFIX}" ${li})
+         endif()
+         if(module_dir)
+            string(REPLACE ${CMAKE_CFG_INTDIR} ${build_mode} mi ${module_dir})
+            set_target_properties(${target} PROPERTIES "LIBRARY_OUTPUT_DIRECTORY_${CONFIG_SUFFIX}" ${mi})
+         endif()
+      endforeach()
+   else()
+      if(ARG_BINARY_DIR)
+         set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${ARG_BINARY_DIR})
+      endif()
+      if(ARG_LIBRARY_DIR)
+         set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${ARG_LIBRARY_DIR})
+      endif()
+      if(module_dir)
+         set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${module_dir})
       endif()
    endif()
 endfunction()
