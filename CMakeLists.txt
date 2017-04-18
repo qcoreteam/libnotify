@@ -11,6 +11,7 @@ include(AddLibNotify)
 include(CheckCXXSymbolExists)
 include(CheckIncludeFileCXX)
 include(CheckFunctionExists)
+include(CheckLibraryExists)
 
 set(NOTIFY_VERSION_MAJOR 0)
 set(NOTIFY_VERSION_MINOR 0)
@@ -50,10 +51,13 @@ set(NOTIFY_VERSION
     "${NOTIFY_VERSION_MAJOR}.${NOTIFY_VERSION_MINOR}.${NOTIFY_VERSION_PATCH}-${NOTIFY_STAGE_NAME}")
 
 # Set some important variables
-set(NOTIFY_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(NOTIFY_WORKSPACE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(NOTIFY_UTILS_DIR "${NOTIFY_WORKSPACE_DIR}/utils")
+set(NOTIFY_SOURCE_DIR "${NOTIFY_WORKSPACE_DIR}/src")
 set(NOTIFY_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 set(NOTUFY_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 set(NOTIFY_INCLUDE_DIR "${NOTIFY_SOURCE_DIR}/include")
+
 set(NOTIFY_EXTRA_INCLUDE_DIR "${NOTIFY_BINARY_DIR}/include")
 set(NOTIFY_RUNTIME_OUTPUT_INTDIR "${NOTIFY_BINARY_DIR}/${CMAKE_CFG_INTDIR}/bin")
 set(NOTIFY_LIBRARY_OUTPUT_INTDIR "${NOTIFY_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib")
@@ -74,6 +78,12 @@ Make sure to enable -DCMAKE_BUILD_TYPE=Debug as well"
 option(NOTIFY_OPT_DISABLE_CLOCK_GETTIME
        "Do not use clock_gettime event if it is available"
        OFF)
+
+option(NOTIFY_OPT_ENABLE_THREADS "Use threads if available." ON)
+
+set(NOTIFY_OPT_LIBDIR_SUFFIX "" CACHE STRING "Define suffix of library directory name (32/64)" )
+
+string(TOUPPER "${CMAKE_BUILD_TYPE}" NOTIFY_BUILD_TYPE)
 
 if(NOTIFY_OPT_ENABLE_VERBOSE_DEBUG)
    add_definitions(-DNOTIFY_DEBUG_MODE 1)
@@ -203,6 +213,7 @@ check_include_file_cxx(sys/select.h NOTIFY_HAVE_SYS_SELECT_H)
 check_include_file_cxx(sys/sendfile.h NOTIFY_HAVE_SYS_SENDFILE_H)
 check_include_file_cxx(sys/stat.h NOTIFY_HAVE_SYS_STAT_H)
 check_include_file_cxx(sys/time.h NOTIFY_HAVE_SYS_TIME_H)
+check_include_file_cxx(pthread.h NOTIFY_HAVE_PTHREAD_H)
 if(NOTIFY_HAVE_SYS_TIME_H)
    list(APPEND CMAKE_EXTRA_INCLUDE_FILESsys/time.h)
 endif()
@@ -216,6 +227,26 @@ check_include_file_cxx(sys/resource.h NOTIFY_SYS_RESOURCE_H)
 check_include_file_cxx(sys/sysctl.h NOTIFY_SYS_SYSCTL_H)
 check_include_file_cxx(sys/timerfd.h NOTIFY_SYS_TIMERFD_H)
 check_include_file_cxx(errno.h NOTIFY_HAVE_ERRNO_H)
+
+# libraray checks
+check_library_exists(pthread pthread_create "" NOTIFY_HAVE_PTHREAD)
+if(NOTIFY_HAVE_PTHREAD)
+   check_library_exists(pthread pthread_getspecific "" NOTIFY_HAVE_PTHREAD_GETSPECIFIC)
+   check_library_exists(pthread pthread_rwlock_init "" NOTIFY_HAVE_PTHREAD_RWLOCK_INIT)
+   check_library_exists(pthread pthread_mutex_lock "" NOTIFY_HAVE_PTHREAD_MUTEX_LOCK)
+endif()
+check_library_exists(dl dlopen "" NOTIFY_HAVE_DL)
+check_library_exists(rt clock_gettime "" NOTIFY_HAVE_RT)
+
+if(NOTIFY_HAVE_PTHREAD)
+   # We want to find pthreads library and at the moment we do want to
+   # have it reported as '-l<lib>' instead of '-pthread'.
+   # TODO: switch to -pthread once the rest of the build system can deal with it.
+   set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+   set(THREADS_HAVE_PTHREAD_ARG Off)
+   find_package(Threads REQUIRED)
+   set(PTHREAD_LIB ${CMAKE_THREAD_LIBS_INIT})
+endif()
 
 check_function_exists(epoll_create NOTIFY_HAVE_EPOLL)
 check_function_exists(epoll_ctl NOTIFY_HAVE_EPOLL_CTL)
@@ -268,6 +299,17 @@ check_function_exists(umask NOTIFY_HAVE_UMASK)
 check_function_exists(unsetenv NOTIFY_HAVE_UNSETENV)
 
 check_function_exists(gethostbyname_r NOTIFY_HAVE_GETHOSTBYNAME_R)
+
+if(NOT APPLE)
+   execute_process(
+       COMMAND ${CMAKE_C_COMPILER} -Wl,--version
+       OUTPUT_VARIABLE stdout
+       ERROR_QUIET
+   )
+   if("${stdout}" MATCHES "GNU gold")
+      set(NOTIFY_LINKER_IS_GOLD ON)
+   endif()
+endif()
 
 include_directories(BEFORE
                     ${NOTIFY_INCLUDE_DIR}
