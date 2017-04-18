@@ -328,6 +328,7 @@ include_directories(BEFORE
                     ${NOTIFY_EXTRA_INCLUDE_DIR})
 
 if(NOT NOTIFY_OPT_DISABLE_TESTS)
+   add_subdirectory(utils/unittest)
    add_subdirectory(tests)
    add_subdirectory(unittests)
 endif()
