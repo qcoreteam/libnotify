@@ -1,23 +1,56 @@
+// Copyright 2017-2018 zzu_softboy <zzu_softboy@163.com>
 //
-// Created by softboy on 18/04/2017.
+// THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+// IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+// OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+// IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+// NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+// THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+// Created by zzu_softboy on 24/04/2017.
 
-#ifndef LIBNOTIFY_GLOBAL_H_H
-#define LIBNOTIFY_GLOBAL_H_H
+#ifndef LIBNOTIFY_GLOBAL_H
+#define LIBNOTIFY_GLOBAL_H
 
-#define NOTIFY_VERSION "0.0.1"
-
-namespace notify
+template <typename T>
+static inline T *notify_get_ptr_helper(T *ptr)
 {
-    int get_sum(int left, int right);
-   class Student
-   {
-   protected:
-       int age;
-   public:
-       Student(int age);
-       int getAge() const;
-   };
+   return ptr;
 };
 
-#endif //LIBNOTIFY_GLOBAL_H_H
+template <typename T>
+static inline typename T::pointer notify_get_ptr_helper(const T &p)
+{
+   return ptr.data();
+}
+
+#define NOTIFY_DECLARE_PRIVATE(Class)\
+inline Class##Private* getImplPtr()\
+{\
+   return reinterpret_cast<Class##Private *>(notify_get_ptr_helper(implPtr))\
+}\
+inline const Class##Private* getImplPtr() const\
+{\
+   return reinterpret_cast<const Class##Provate *>(notify_get_ptr_helper(implPtr))\
+}\
+friend class Class##Private;
+
+#define NOTIFY_DECLARE_PUBLIC(Class)\
+inline Class* getApiPtr()\
+{\
+   return static_cast<Class *>(apiPtr);\
+}\
+inline const Class* getApiPtr() const\
+{\
+   return static_const<const Class *>(apiPtr);\
+}\
+friend class Class;
+
+#define NOTIFY_D(Class) Class##Private * const implPtr = getImplPtr()
+#define NOTIFY_Q(Class) Class * const apiPtr = getApiPtr()
+
+#endif //LIBNOTIFY_GLOBAL_H
