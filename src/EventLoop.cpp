@@ -17,17 +17,5 @@
 
 namespace notify
 {
-    int get_sum(int left, int right)
-    {
-       return left + right;
-    };
 
-    Student::Student(int age):age(age)
-    {
-    }
-
-    int Student::getAge() const
-    {
-       return age;
-    }
 }

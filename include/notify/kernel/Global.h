@@ -17,6 +17,7 @@
 #define LIBNOTIFY_GLOBAL_H
 
 #include "notify/kernel/SystemDetection.h"
+#include "notify/kernel/ProcessorDetection.h"
 
 #if defined(__ELF__)
 #  define NOTIFY_OF_ELF
@@ -35,7 +36,7 @@ static inline T *notify_get_ptr_helper(T *ptr)
 template <typename T>
 static inline typename T::pointer notify_get_ptr_helper(const T &p)
 {
-   return ptr.data();
+   return p.data();
 }
 
 #define NOTIFY_DECLARE_PRIVATE(Class)\
