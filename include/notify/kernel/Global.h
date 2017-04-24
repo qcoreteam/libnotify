@@ -16,6 +16,16 @@
 #ifndef LIBNOTIFY_GLOBAL_H
 #define LIBNOTIFY_GLOBAL_H
 
+#include "notify/kernel/SystemDetection.h"
+
+#if defined(__ELF__)
+#  define NOTIFY_OF_ELF
+#endif
+
+#if defined(__MACH__) && defined(__APPLE__)
+#  define NOTIFY_OF_MACH_O
+#endif
+
 template <typename T>
 static inline T *notify_get_ptr_helper(T *ptr)
 {
