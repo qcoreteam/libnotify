@@ -460,4 +460,145 @@
 #  error "libnotify has not been tested with this compiler"
 #endif
 
+// C++11 support
+//
+// Paper              Macro                                     SD-6 macro
+// N2341              NOTIFY_COMPILER_ALIGNAS
+// N2341              NOTIFY_COMPILER_ALIGNOF
+// N2427              NOTIFY_COMPILER_ATOMICS
+// N2761              NOTIFY_COMPILER_ATTRIBUTES                __cpp_attributes = 200809
+// N2541              NOTIFY_COMPILER_AUTO_FUNCTION
+// N1984 N2546        NOTIFY_COMPILER_AUTO_TYPE
+// N2437              NOTIFY_COMPILER_CLASS_ENUM
+// N2235              NOTIFY_COMPILER_CONSTEXPR                 __cpp_constexpr = 200704
+// N2343 N3276        NOTIFY_COMPILER_DECLTYPE                  __cpp_decltype = 200707
+// N2346              NOTIFY_COMPILER_DEFAULT_MEMBERS
+// N2346              NOTIFY_COMPILER_DELETE_MEMBERS
+// N1986              NOTIFY_COMPILER_DELEGATING_CONSTRUCTORS
+// N2437              NOTIFY_COMPILER_EXPLICIT_CONVERSIONS
+// N3206 N3272        NOTIFY_COMPILER_EXPLICIT_OVERRIDES
+// N1987              NOTIFY_COMPILER_EXTERN_TEMPLATES
+// N2540              NOTIFY_COMPILER_INHERITING_CONSTRUCTORS
+// N2672              NOTIFY_COMPILER_INITIALIZER_LISTS
+// N2658 N2927        NOTIFY_COMPILER_LAMBDA                    __cpp_lambdas = 200907
+// N2756              NOTIFY_COMPILER_NONSTATIC_MEMBER_INIT
+// N2855 N3050        NOTIFY_COMPILER_NOEXCEPT
+// N2431              NOTIFY_COMPILER_NULLPTR
+// N2930              NOTIFY_COMPILER_RANGE_FOR
+// N2442              NOTIFY_COMPILER_RAW_STRINGS               __cpp_raw_strings = 200710
+// N2439              NOTIFY_COMPILER_REF_QUALIFIERS
+// N2118 N2844 N3053  NOTIFY_COMPILER_RVALUE_REFS               __cpp_rvalue_references = 200610
+// N1720              NOTIFY_COMPILER_STATIC_ASSERT             __cpp_static_assert = 200410
+// N2258              NOTIFY_COMPILER_TEMPLATE_ALIAS
+// N2659              NOTIFY_COMPILER_THREAD_LOCAL
+// N2660              NOTIFY_COMPILER_THREADSAFE_STATICS
+// N2765              NOTIFY_COMPILER_UDL                       __cpp_user_defined_literals = 200809
+// N2442              NOTIFY_COMPILER_UNICODE_STRINGS           __cpp_unicode_literals = 200710
+// N2640              NOTIFY_COMPILER_UNIFORM_INIT
+// N2544              NOTIFY_COMPILER_UNRESTRICTED_UNIONS
+// N1653              NOTIFY_COMPILER_VARIADIC_MACROS
+// N2242 N2555        NOTIFY_COMPILER_VARIADIC_TEMPLATES        __cpp_variadic_templates = 200704
+//
+// For any future version of the C++ standard, we use only the SD-6 macro.
+// For full listing, see
+// http://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations
+//
+// C++ extensions:
+//    NOTIFY_COMPILER_RESTRICTED_VLA       variable-length arrays, prior to __cpp_runtime_arrays
+
+#ifdef __cplusplus
+#  if __cplusplus < 201103L && !(defined(NOTIFY_CC_MSVC) && NOTIFY_CC_MSVC  >= 1800)
+#     error "libnotify requires a C++11 compiler and yours does not seem to be that."
+#  endif
+#endif
+
+#ifdef NOTIFY_CC_INTEL
+#  define NOTIFY_COMPILER_RESTRICTED_VLA
+#  define NOTIFY_COMPILER_VARIADIC_MACROS // C++11 feature supported as an extension in other modes, too
+#  define NOTIFY_COMPILER_THREADSAFE_STATICS
+#  if __INTEL_COMPILER < 1200
+#     define NOTIFY_NO_TEMPLATE_FRIENDS
+#  endif
+#  if __INTEL_COMPILER >= 1310 && !defined(_WIN32)
+// ICC supports C++14 binary literals in C, C++98, and C++11 modes
+// at least since 13.1, but I can't test further back
+#     define NOTIFY_COMPILER_BINARY_LITERALS
+#  endif
+#  if __cplusplus >= 201103L || defined(__INTEL_CXX11_MODE__)
+#     if __INTEL_COMPILER >= 1200
+#        define NOTIFY_COMPILER_AUTO_TYPE
+#        define NOTIFY_COMPILER_CLASS_ENUM
+#        define NOTIFY_COMPILER_DECLTYPE
+#        define NOTIFY_COMPILER_DEFAULT_MEMBERS
+#        define NOTIFY_COMPILER_DELETE_MEMBERS
+#        define NOTIFY_COMPILER_EXTERN_TEMPLATES
+#        define NOTIFY_COMPILER_LAMBDA
+#        define NOTIFY_COMPILER_RVALUE_REFS
+#        define NOTIFY_STATIC_ASSERT
+#        define NOTIFY_VARIADIC_MACROS
+#     endif
+#     if __INTEL_COMPILER >= 1210
+#        define NOTIFY_COMPILER_ATTRIBUTES
+#        define NOTIFY_COMPILER_AUTO_FUNCTION
+#        define NOTIFY_COMPILER_NULLPTR
+#        define NOTIFY_COMPILER_TEMPLATE_ALIAS
+#        ifndef _CHAR16T // MSVC headers
+#           define NOTIFY_COMPILER_UNICODE_STRINGS
+#        endif
+#        define NOTIFY_COMPILER_VARIADIC_TEMPLATES
+#     endif
+#     if __INTEL_COMPILER >= 1300
+#        define NOTIFY_COMPILER_ATOMICS
+//       constexpr support is only partial
+//#      define NOTIFY_COMPILER_CONSTEXPR
+#        define NOTIFY_COMPILER_INITIALIZER_LISTS
+#        define NOTIFY_COMPILER_UNIFORM_INIT
+#        define NOTIFY_COMPILER_NOEXCEPT
+#     endif
+#     if __INTEL_COMPILER >= 1400
+// Intel issue ID 6000056211, bug DPD200534796
+//#        define NOTIFY_COMPILER_CONSTEXPR
+#        define NOTIFY_COMPILER_DELEGATING_CONSTRUCTORS
+#        define NOTIFY_COMPILER_EXPLICIT_CONVERSIONS
+#        define NOTIFY_COMPILER_EXPLICIT_OVERRIDES
+#        define NOTIFY_COMPILER_NONSTATIC_MEMBER_INIT
+#        define NOTIFY_COMPILER_RANGE_FOR
+#        define NOTIFY_COMPILER_RAW_STRINGS
+#        define NOTIFY_COMPILER_REF_QUALIFIERS
+#        define NOTIFY_COMPILER_UNICODE_STRINGS
+#        define NOTIFY_COMPILER_UNRESTRICTED_UNIONS
+#     endif
+#     if __INTEL_COMPILER >= 1500
+#        if __INTEL_COMPILER * 100 + __INTEL_COMPILER_UPDATE >= 150001
+//       the bug mentioned above is fixed in 15.0.1
+#           define NOTIFY_COMPILER_CONSTEXPR
+#        endif
+#        define NOTIFY_COMPILER_ALIGNAS
+#        define NOTIFY_COMPILER_ALIGNOF
+#        define NOTIFY_COMPILER_INHERITING_CONSTRUCTORS
+// C++11 thread_local is broken on OS X (Clang doesn't support it either)
+#        ifndef NOTIFY_OS_OSX
+#           define NOTIFY_COMPILER_THREAD_LOCAL
+#        endif
+#        define NOTIFY_COMPILER_UDL
+#     endif
+#     ifdef _MSC_VER
+#        if _MSC_VER == 1700
+//       <initializer_list> is missing with MSVC 2012 (it's present in 2010, 2013 and up)
+#           undef NOTIFY_COMPILER_INITIALIZER_LISTS
+#        endif
+#        if _MSC_VER < 1900
+//          ICC disables unicode string support when compatibility mode with MSVC 2013 or lower is active
+#           undef NOTIFY_COMPILER_UNICODE_STRINGS
+//          Even though ICC knows about ref-qualified members, MSVC 2013 or lower doesn't, so
+//          certain member functions may be missing from the DLLs.
+#           undef NOTIFY_COMPILER_REF_QUALIFIERS
+//          Disable constexpr unless the MS headers have constexpr in all the right places too
+//          (like std::numeric_limits<T>::max())
+#           undef NOTIFY_COMPILER_CONSTEXPR
+#        endif
+#     endif
+#  endif
+#endif
+
 #endif //NOTIFY_COMPILERDETECTION_H
