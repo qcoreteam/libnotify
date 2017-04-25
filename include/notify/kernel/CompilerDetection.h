@@ -216,6 +216,248 @@
 #  if NOTIFY_CC_GNU >= 403 && !defined(NOTIFY_CC_CLANG)
 #     define NOTIFY_ALLOC_SIZE(x) __attribute__((alloc_size(x)))
 #  endif
+// IBM compiler versions are a bit messy. There are actually two products:
+// the C product, and the C++ product. The C++ compiler is always packaged
+// with the latest version of the C compiler. Version numbers do not always
+// match. This little table (I'm not sure it's accurate) should be helpful:
+// C++ product                C product
+// C Set 3.1                  C Compiler 3.0
+// ...                        ...
+// C++ Compiler 3.6.6         C Compiler 4.3
+// ...                        ...
+// Visual Age C++ 4.0         ...
+// ...                        ...
+// Visual Age C++ 5.0         C Compiler 5.0
+// ...                        ...
+// Visual Age C++ 6.0         C Compiler 6.0
+// Now:
+// __xlC__    is the version of the C compiler in hexadecimal notation
+//
+// is only an approximation of the C++ compiler version
+// __IBMCPP__ is the version of the C++ compiler in decimal notation
+//
+// but it is not defined on older compilers like C Set 3.1
+#elif defined(__xlC__)
+#  define NOTIFY_CC_XLC
+#  define NOTIFY_FULL_TEMPLATE_INSTANTIATION
+#  if __xlC__ < 0x400
+#     error "Compiler not supported"
+#  elif __xlC__ >= 0x0600
+#     define NOTIFY_ALIGNOF(type) __alignof__(type)
+#     define NOTIFY_TYPEOF(expr) __typeof__(expr)
+#     define NOTIFY_DECL_ALIGN(n) __attribute__((__aligned__(n)))
+#     define NOTIFY_PACKED __attribute__((__packed__))
+#  endif
+// Older versions of DEC C++ do not define __EDG__ or __EDG - observed
+// on DEC C++ V5.5-004. New versions do define  __EDG__ - observed on
+// Compaq C++ V6.3-002.
+// This compiler is different enough from other EDG compilers to handle
+// it separately anyway.
+#elif defined(__DECCXX) || defined(__DECC)
+#  define NOTIFY_CC_DEC
+// Compaq C++ V6 compilers are EDG-based but I'm not sure about older
+// DEC C++ V5 compilers.
+#  if defined(__EDG__)
+#     define NOTIFY_CC_EDG
+#  endif
+// Compaq has disabled EDG's _BOOL macro and uses _BOOL_EXISTS instead
+// - observed on Compaq C++ V6.3-002.
+// In any case versions prior to Compaq C++ V6.0-005 do not have bool.
+#  if !defined(_BOOL_EXISTS)
+#     error "Compiler not supported"
+#  endif
+// Spurious (?) error messages observed on Compaq C++ V6.5-014.
+// Apply to all versions prior to Compaq C++ V6.0-000 - observed on
+// DEC C++ V5.5-004.
+#  if __DECCXX_VER < 60060000
+#     define NOTIFY_BROKEN_TEMPLATE_SPECIALIZATION
+#  endif
+// avoid undefined symbol problems with out-of-line template members
+#  define NOTIFY_OUTOFLINE_TEMPLATE inline
+
+// The Portland Group C++ compiler is based on EDG and does define __EDG__
+// but the C compiler does not
+#elif defined(__PGI)
+#  define NOTIFY_CC_PGI
+#  if defined(__EDG__)
+#     define NOTIFY_CC_EDG
+#  endif
+
+// Compilers with EDG front end are similar. To detect them we test:
+// __EDG documented by SGI, observed on MIPSpro 7.3.1.1 and KAI C++ 4.0b
+// __EDG__ documented in EDG online docs, observed on Compaq C++ V6.3-002
+// and PGI C++ 5.2-4
+#elif !defined(NOTIFY_OS_HPUX) && (defined(__EDG) || defined(__EDG__))
+// From the EDG documentation (does not seem to apply to Compaq C++ or GHS C):
+// _BOOL
+//    Defined in C++ mode when bool is a keyword. The name of this
+//    predefined macro is specified by a configuration flag. _BOOL
+//    is the default.
+// __BOOL_DEFINED
+//    Defined in Microsoft C++ mode when bool is a keyword.
+#  define NOTIFY_CC_EDG
+#  if !defined(_BOOL) && !defined(__BOOL_DEFINED) && !defined(__ghs)
+#     error "Compiler not supported"
+#  endif
+// The Comeau compiler is based on EDG and does define __EDG__
+#  if defined(__COMO__)
+#     define NOTIFY_CC_COMEAU
+// The `using' keyword was introduced to avoid KAI C++ warnings
+// but it's now causing KAI C++ errors instead. The standard is
+// unclear about the use of this keyword, and in practice every
+// compiler is using its own set of rules. Forget it.
+#  elif defined(__KCC)
+#     define NOTIFY_CC_KAI
+// Using the `using' keyword avoids Intel C++ for Linux warnings
+#  elif defined(__INTEL_COMPILER)
+#     define NOTIFY_CC_INTEL (__INTEL_COMPILER)
+// Uses CFront, make sure to read the manual how to tweak templates.
+#  elif defined(__ghs)
+#     define NOTIFY_CC_GHS
+#     define NOTIFY_DECL_DEPRECATED __attribute__ ((__deprecated__))
+#     define NOTIFY_FUNC_INFO __PRETTY_FUNCTION__
+#     define NOTIFY_TYPEOF(expr) __typeof__(expr)
+#     define NOTIFY_ALIGNOF(type) __alignof__(type)
+#     define NOTIFY_UNREACHABLE_IMPL()
+#     if defined(__cplusplus)
+#        define NOTIFY_COMPILER_AUTO_TYPE
+#        define NOTIFY_COMPILER_STATIC_ASSERT
+#        define NOTIFY_COMPILER_RANGE_FOR
+#        if __GHS_VERSION_NUMBER >= 201505
+#           define NOTIFY_COMPILER_ALIGNAS
+#           define NOTIFY_COMPILER_ALIGNOF
+#           define NOTIFY_COMPILER_ATOMICS
+#           define NOTIFY_COMPILER_ATTRIBUTES
+#           define NOTIFY_COMPILER_AUTO_FUNCTION
+#           define NOTIFY_COMPILER_CLASS_ENUM
+#           define NOTIFY_COMPILER_CONSTEXPR
+#           define NOTIFY_COMPILER_DECLTYPE
+#           define NOTIFY_COMPILER_DEFAULT_MEMBERS
+#           define NOTIFY_COMPILER_DELETE_MEMBERS
+#           define NOTIFY_COMPILER_DELEGATING_CONSTRUCTORS
+#           define NOTIFY_COMPILER_EXPLICIT_CONVERSIONS
+#           define NOTIFY_COMPILER_EXPLICIT_OVERRIDES
+#           define NOTIFY_COMPILER_EXTERN_TEMPLATES
+#           define NOTIFY_COMPILER_INHERITING_CONSTRUCTORS
+#           define NOTIFY_COMPILER_INITIALIZER_LISTS
+#           define NOTIFY_COMPILER_LAMBDA
+#           define NOTIFY_COMPILER_NONSTATIC_MEMBER_INIT
+#           define NOTIFY_COMPILER_NOEXCEPT
+#           define NOTIFY_COMPILER_NULLPTR
+#           define NOTIFY_COMPILER_RANGE_FOR
+#           define NOTIFY_COMPILER_RAW_STRINGS
+#           define NOTIFY_COMPILER_REF_QUALIFIERS
+#           define NOTIFY_COMPILER_RVALUE_REFS
+#           define NOTIFY_COMPILER_STATIC_ASSERT
+#           define NOTIFY_COMPILER_TEMPLATE_ALIAS
+#           define NOTIFY_COMPILER_THREAD_LOCAL
+#           define NOTIFY_COMPILER_THREADSAFE_STATICS
+#           define NOTIFY_COMPILER_UDL
+#           define NOTIFY_COMPILER_UNICODE_STRINGS
+#           define NOTIFY_COMPILER_UNIFORM_INIT
+#           define NOTIFY_COMPILER_UNRESTRICTED_UNIONS
+#           define NOTIFY_COMPILER_VARIADIC_MACROS
+#           define NOTIFY_COMPILER_VARIADIC_TEMPLATES
+#        endif
+#     endif
+#  elif defined(__DCC__)
+#     define NOTIFY_CC_DIAB
+#     if !defined(__bool)
+#        error "Compiler not supported"
+#     endif
+// The UnixWare 7 UDK compiler is based on EDG and does define __EDG__
+#  elif defined(__USLC__) && defined(__SCO_VERSION__)
+#     define NOTIFY_CC_USLC
+// The latest UDK 7.1.1b does not need this, but previous versions do
+#     if !defined(__SCO_VERSION__) || (__SCO_VERSION__ < 302200010)
+#        define NOTIFY_OUTOFLINE_TEMPLATE inline
+#     endif
+// Never tested!
+#  elif defined(CENTERLINE_CLPP) || defined(OBJECTCENTER)
+#     define NOTIFY_CC_OC
+// CDS++ defines __EDG__ although this is not documented in the Reliant
+// documentation. It also follows conventions like _BOOL and this documented
+#  elif defined(sinix)
+#     define NOTIFY_CC_CDS
+// The MIPSpro compiler defines __EDG
+#  elif defined(__sgi)
+#     define NOTIFY_CC_MIPS
+#     define NOTIFY_NO_TEMPLATE_FRIENDS
+#     if defined(_COMPILER_VERSION) && (_COMPILER_VERSION > 740)
+#        define NOTIFY_OUTOFLINE_TEMPLATE inline
+#        pragma set woff 3624,3625,3649 // turn off some harmless warnings
+#     endif
+#  endif
+// VxWorks' DIAB toolchain has an additional EDG type C++ compiler
+// (see __DCC__ above). This one is for C mode files (__EDG is not defined)
+#elif defined(_DIAB_TOOL)
+#  define NOTIFY_CC_DIAB
+#  define NOTIFY_FUNC_INFO __PRETTY_FUNCTION__
+//  Never tested!
+#elif defined(__HIGHC__)
+#  define NOTIFY_CC_HIGHC
+#elif defined(__SUNPRO_CC) || defined(__SUNPRO_C)
+#  define NOTIFY_CC_SUN
+#  define NOTIFY_COMPILER_MANGLES_RETURN_TYPE
+// 5.0 compiler or better
+//  'bool' is enabled by default but can be disabled using -features=nobool
+//  in which case _BOOL is not defined
+//      this is the default in 4.2 compatibility mode triggered by -compat=4
+#  if __SUNPRO_CC >= 0x500
+#     define NOTIFY_NO_TEMPLATE_TEMPLATE_PARAMETERS
+// see http://developers.sun.com/sunstudio/support/Ccompare.html
+#     if __SUNPRO_CC >= 0x590
+#        define NOTIFY_ALIGNOF(type) __alignof__(type)
+#        define NOTIFY_TYPEOF(expr) __typeof__(expr)
+#        define NOTIFY_DECL_ALIGN(n) __attribute__((__aligned__(n)))
+#     endif
+#     if __SUNPRO_CC >= 0x550
+#        define NOTIFY_DECL_EXPORT __global
+#     endif
+#     if __SUNPRO_CC < 0x5a0
+#        define NOTIFY_NO_TEMPLATE_FRIENDS
+#     endif
+#     if !defined(_BOOL)
+#        error "Compiler not supported"
+#     endif
+// 4.2 compiler or older
+#  else
+#     error "Compiler not supported"
+#  endif
+// CDS++ does not seem to define __EDG__ or __EDG according to Reliant
+// documentation but nevertheless uses EDG conventions like _BOOL
+#elif defined(sinix)
+#  define NOTIFY_CC_EDG
+#  define NOTIFY_CC_CDS
+#  if !defined(_BOOL)
+#     error "Compiler not supported"
+#  endif
+#  define NOTIFY_BROKEN_TEMPLATE_SPECIALIZATION
+
+#elif defined(NOTIFY_OS_HPUX)
+// __HP_aCC was not defined in first aCC releases
+#  if defined(__HP_aCC) || __cplusplus >= 199707L
+#     define NOTIFY_NO_TEMPLATE_FRIENDS
+#     define NOTIFY_CC_HPACC
+#     define NOTIFY_FUNC_INFO __PRETTY_FUNCTION__
+#     if __HP_aCC-0 < 060000
+#        define NOTIFY_NO_TEMPLATE_TEMPLATE_PARAMETERS
+#        define NOTIFY_DECL_EXPORT __declspec(dllexport)
+#        define NOTIFY_DECL_IMPORT __declspec(dllimport)
+#     endif
+#     if __HP_aCC-0 >= 061200
+#        define NOTIFY_DECL_ALIGN(n) __attribute__((aligned(n)))
+#     endif
+#     if __HP_aCC-0 >= 062000
+#        define NOTIFY_DECL_EXPORT __attribute__((visibility("default")))
+#        define NOTIFY_DECL_HIDDEN __attribute__((visibility("hidden")))
+#        define NOTIFY_DECL_IMPORT NOTIFY_DECL_EXPORT
+#     endif
+#  else
+#     error "Compiler not supported"
+#  endif
+#else
+#  error "libnotify has not been tested with this compiler"
 #endif
 
 #endif //NOTIFY_COMPILERDETECTION_H
