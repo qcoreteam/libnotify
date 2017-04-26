@@ -751,4 +751,549 @@
 #  endif
 #endif // NOTIFY_CC_CLANG
 
+#if defined(NOTIFY_CC_GNU) && !defined(NOTIFY_CC_INTEL) && !defined(NOTIFY_CC_CLANG)
+#  define NOTIFY_COMPILER_RESTRICTED_VLA
+#  define NOTIFY_COMPILER_THREADSAFE_STATICS
+#  if NOTIFY_CC_GNU >= 403
+// GCC supports binary literals in C, C++98 and C++11 modes
+#     define NOTIFY_COMPILER_BINARY_LITERALS
+#  endif
+#  if !defined(__STRICT_ANSI__) || defined(__GXX_EXPERIMENTAL_CXX0X__) \
+      || (defined(__cplusplus) && (__cplusplus >= 201103L)) \
+      || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
+      // Variadic macros are supported for gnu++98, c++11, C99 ... since forever (gcc 2.97)
+#     define NOTIFY_COMPILER_VARIADIC_MACROS
+#  endif
+#  if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L
+#     if NOTIFY_CC_GNU >= 403
+// C++11 features supported in GCC 4.3:
+#        define NOTIFY_COMPILER_DECLTYPE
+#        define NOTIFY_RVALUE_REFS
+#        define NOTIFY_STATIC_ASSERT
+#     endif
+#     if NOTIFY_CC_GNU >= 404
+// C++11 features supported in GCC 4.4:
+#        define NOTIFY_COMPILER_AUTO_FUNCTION
+#        define NOTIFY_COMPILER_AUTO_TYPE
+#        define NOTIFY_COMPILER_EXTERN_TEMPLATES
+#        define NOTIFY_COMPILER_UNIFORM_INIT
+#        define NOTIFY_COMPILER_UNICODE_STRINGS
+#        define NOTIFY_COMPILER_VARIADIC_TEMPLATES
+#     endif
+// C++11 features supported in GCC 4.5:
+#     if NOTIFY_CC_GNU >= 405
+#        define NOTIFY_COMPILER_EXPLICIT_CONVERSIONS
+// GCC 4.4 implements initializer_list but does not define typedefs required
+// by the standard.
+#        define NOTIFY_COMPILER_INITIALIZER_LISTS
+#        define NOTIFY_COMPILER_LAMBDA
+#        define NOTIFY_COMPILER_RAW_STRINGS
+#        define NOTIFY_COMPILER_CLASS_ENUM
+#     endif
+#     if NOTIFY_CC_GNU >= 406
+// Pre-4.6 compilers implement a non-final snapshot of N2346, hence default and delete
+// functions are supported only if they are public. Starting from 4.6, GCC handles
+// final version - the access modifier is not relevant.
+#        define NOTIFY_COMPILER_DEFAULT_MEMBERS
+#        define NOTIFY_COMPILER_DELETE_MEMBERS
+// C++11 features supported in GCC 4.6:
+#        define NOTIFY_COMPILER_CONSTEXPR
+#        define NOTIFY_COMPILER_NULLPTR
+#        define NOTIFY_COMPILER_UNRESTRICTED_UNIONS
+#        define NOTIFY_COMPILER_RANGE_FOR
+#     endif
+#     if NOTIFY_CC_GNU >= 407
+// GCC 4.4 implemented <atomic> and std::atomic using its old intrinsics.
+// However, the implementation is incomplete for most platforms until GCC 4.7:
+// instead, std::atomic would use an external lock. Since we need an std::atomic
+// we only enable it here
+#        define NOTIFY_COMPILER_ATOMICS
+// GCC 4.6.x has problems dealing with noexcept expressions,
+// so turn the feature on for 4.7 and above, only
+#        define NOTIFY_COMPILER_NOEXCEPT
+// C++11 features supported in GCC 4.7:
+#        define NOTIFY_COMPILER_NONSTATIC_MEMBER_INIT
+#        define NOTIFY_COMPILER_DELEGATING_CONSTRUCTORS
+#        define NOTIFY_COMPILER_EXPLICIT_OVERRIDES
+#        define NOTIFY_COMPILER_TEMPLATE_ALIAS
+#        define NOTIFY_COMPILER_UDL
+#     endif
+#     if NOTIFY_CC_GNU >= 408
+#        define NOTIFY_COMPILER_ATTRIBUTES
+#        define NOTIFY_COMPILER_ALIGNAS
+#        define NOTIFY_COMPILER_ALIGNOF
+#        define NOTIFY_COMPILER_INHERITING_CONSTRUCTORS
+#        define NOTIFY_COMPILER_THREAD_LOCAL
+#        if NOTIFY_CC_GNU > 408 || __GNUC_PATCHLEVEL__ >= 1
+#           define NOTIFY_COMPILER_REF_QUALIFIERS
+#        endif
+#     endif
+// C++11 features are complete as of GCC 4.8.1
+#  if __cplusplus > 201103L
+#     if NOTIFY_CC_GNU >= 409
+// C++1y features in GCC 4.9 - deprecated, do not update this list */
+#        define NOTIFY_COMPILER_LAMBDA_CAPTURES
+#        define NOTIFY_COMPILER_RETURN_TYPE_DEDUCTION
+#     endif
+#  endif
+#  endif
+#endif
+
+#if defined(NOTIFY_CC_MSVC) && !defined(NOTIFY_CC_INTEL)
+#  if defined(__cplusplus)
+#     if _MSC_VER >= 1400
+// C++11 features supported in VC8 = VC2005:
+#        define NOTIFY_COMPILER_VARIADIC_MACROS
+#        ifndef __cplusplus_cli
+// 2005 supports the override and final contextual keywords, in
+// the same positions as the C++11 variants, but 'final' is
+// called 'sealed' instead:
+// http://msdn.microsoft.com/en-us/library/0w2w91tf%28v=vs.80%29.aspx
+// The behavior is slightly different in C++/CLI, which requires the
+// "virtual" keyword to be present too, so don't define for that.
+// So don't define NOTIFY_COMPILER_EXPLICIT_OVERRIDES (since it's not
+// the same as the C++11 version), but define the Q_DECL_* flags
+// accordingly:
+#           define NOTIFY_DECL_OVERRIDE override
+#           define NOTIFY_DECL_FINAL sealed
+#        endif
+#     endif
+#     if _MSC_VER >= 1600
+// C++11 features supported in VC10 = VC2010:
+#        define NOTIFY_COMPILER_AUTO_FUNCTION
+#        define NOTIFY_COMPILER_AUTO_TYPE
+#        define NOTIFY_COMPILER_DECLTYPE
+#        define NOTIFY_COMPILER_EXTERN_TEMPLATES
+#        define NOTIFY_COMPILER_LAMBDA
+#        define NOTIFY_COMPILER_NULLPTR
+#        define NOTIFY_COMPILER_RVALUE_REFS
+#        define NOTIFY_COMPILER_STATIC_ASSERT
+// MSVC's library has std::initializer_list, but the compiler does not support the braces initialization
+//#      define NOTIFY_COMPILER_INITIALIZER_LISTS
+//#      define NOTIFY_COMPILER_UNIFORM_INIT
+#     endif
+#     if _MSC_VER >= 1700
+// C++11 features supported in VC11 = VC2012:
+#        undef NOTIFY_DECL_OVERRIDE /* undo 2005/2008 settings... */
+#        undef NOTIFY_DECL_FINAL    /* undo 2005/2008 settings... */
+#        define NOTIFY_COMPILER_EXPLICIT_OVERRIDES /* ...and use std C++11 now   */
+#        define NOTIFY_COMPILER_CLASS_ENUM
+#        define NOTIFY_COMPILER_ATOMICS
+#     endif /* VC 11 */
+#     if _MSC_VER >= 1800
+//  C++11 features in VC12 = VC2013
+// Implemented, but can't be used on move special members
+//#      define NOTIFY_COMPILER_DEFAULT_MEMBERS
+#        define NOTIFY_COMPILER_DELETE_MEMBERS
+#        define NOTIFY_COMPILER_DELEGATINTG_CONSTRUCTORS
+#        define NOTIFY_COMPILER_EXPLICIT_CONVERSIONS
+#        define NOTIFY_COMPILER_NONSTATIC_MEMBER_INIT
+// implemented, but nested initialization fails (eg tst_qvector): http://connect.microsoft.com/VisualStudio/feedback/details/800364/initializer-list-calls-object-destructor-twice
+//      #define NOTIFY_COMPILER_INITIALIZER_LISTS
+// implemented in principle, but has a bug that makes it unusable: http://connect.microsoft.com/VisualStudio/feedback/details/802058/c-11-unified-initialization-fails-with-c-style-arrays
+//      #define NOTIFY_COMPILER_UNIFORM_INIT
+#        define NOTIFY_COMPILER_RAW_STRINGS
+#        define NOTIFY_COMPILER_TEMPLATE_ALIAS
+#        define NOTIFY_COMPILER_VARIADIC_TEMPLATES
+#     endif /* VC 12*/
+#     if _MSC_FULL_VER >= 180030324
+#        define NOTIFY_COMPILER_INITIALIZER_LISTS
+#     endif
+#     if _MSC_VER >= 1900
+// C++11 features in VC14 = VC2015
+#        define NOTIFY_COMPILER_DEFAULT_MEMBERS
+#        define NOTIFY_COMPILER_ALIGNAS
+#        define NOTIFY_COMPILER_ALIGNOF
+// Partial support
+//#      define NOTIFY_COMPILER_CONSTEXPR
+#        define NOTIFY_COMPILER_INHERITING_CONSTRUCTORS
+#        define NOTIFY_COMPILER_NOEXCEPT
+#        define NOTIFY_COMPILER_RANGE_FOR
+#        define NOTIFY_COMPILER_REF_QUALIFIERS
+#        define NOTIFY_COMPILER_THREAD_LOCAL
+// Broken, see QTBUG-47224 and https://connect.microsoft.com/VisualStudio/feedback/details/1549785
+//#      define NOTIFY_COMPILER_THREADSAFE_STATICS
+#        define NOTIFY_COMPILER_UDL
+#        define NOTIFY_COMPILER_UNICODE_STRINGS
+// Uniform initialization is not working yet
+//#      define NOTIFY_COMPILER_UNIFORM_INIT
+#        define NOTIFY_COMPILER_UNRESTRICTED_UNIONS
+#     endif
+#     if _MSC_FULL_VER >= 190023419
+#        define NOTIFY_COMPILER_ATTRIBUTES
+// Almost working, see https://connect.microsoft.com/VisualStudio/feedback/details/2011648
+//#      define NOTIFY_COMPILER_CONSTEXPR
+#        define NOTIFY_COMPILER_THREADSAFE_STATICS
+#        define NOTIFY_COMPILER_UNIFORM_INIT
+#     endif
+#     if _MSC_VER >= 1910
+#        define NOTIFY_COMPILER_CONSTEXPR
+#     endif
+#  endif // __cplusplus
+#endif // NOTIFY_CC_MSVC
+
+#ifdef __cplusplus
+#  include <utility>
+#  if defined(NOTIFY_OS_QNX)
+// By default, QNX 7.0 uses libc++ (from LLVM) and
+// QNX 6.X uses Dinkumware's libcpp. In all versions,
+// it is also possible to use GNU libstdc++.
+
+// For Dinkumware, some features must be disabled
+// (mostly because of library problems).
+// Dinkumware is assumed when __GLIBCXX__ (GNU libstdc++)
+// and _LIBCPP_VERSION (LLVM libc++) are both absent.
+#     if !defined(__GLIBCXX__) && !defined(_LIBCPP_VERSION)
+// Older versions of libcpp (QNX 650) do not support C++11 features
+// _HAS_* macros are set to 1 by toolchains that actually include
+// Dinkum C++11 libcpp.
+#        if !defined(_HAS_CPP0X) || !_HAS_CPP0X
+// Disable C++11 features that depend on library support
+#           undef NOTIFY_COMPILER_INITIALIZER_LISTS
+#           undef NOTIFY_COMPILER_RVALUE_REFS
+#           undef NOTIFY_COMPILER_REF_QUALIFIERS
+#           undef NOTIFY_COMPILER_UNICODE_STRINGS
+#           undef NOTIFY_COMPILER_NOEXCEPT
+#        endif // !_HAS_CPP0X
+#        if !defined(_HAS_NULLPTR_T) || !_HAS_NULLPTR_T
+#           undef NOTIFY_COMPILER_NULLPTR
+#        endif // !_HAS_NULLPTR_T
+#        if !defined(_HAS_CONSTEXPR) || !_HAS_CONSTEXPR
+// The libcpp is missing constexpr keywords on important functions like std::numeric_limits<>::min()
+// Disable constexpr support on QNX even if the compiler supports it
+#           undef NOTIFY_COMPILER_CONSTEXPR
+#        endif // !_HAS_CONSTEXPR
+#     endif // !__GLIBCXX__ && !_LIBCPP_VERSION
+#  endif // NOTIFY_OS_QNX
+#  if (defined(NOTIFY_CC_CLANG) || defined(NOTIFY_CC_INTEL)) && defined(NOTIFY_OS_MAC) && defined(__GNUC_LIBSTD__) \
+&& ((__GNUC_LIBSTD__-0) * 100 + __GNUC_LIBSTD_MINOR__-0 <= 402)
+// Apple has not updated libstdc++ since 2007, which means it does not have
+// <initializer_list> or std::move. Let's disable these features
+#     undef NOTIFY_COMPILER_INITIALIZER_LISTS
+#     undef NOTIFY_COMPILER_RVALUE_REFS
+#     undef NOTIFY_COMPILER_REF_QUALIFIERS
+// Also disable <atomic>, since it's clearly not there
+#     undef NOTIFY_COMPILER_ATOMICS
+#  endif
+#  if defined(NOTIFY_CC_CLANG) && defined(NOTIFY_CC_INTEL) && NOTIFY_CC_INTEL >= 1500
+// ICC 15.x and 16.0 have their own implementation of std::atomic, which is activated when in Clang mode
+// (probably because libc++'s <atomic> on OS X failed to compile), but they're missing some
+// critical definitions. (Reported as Intel Issue ID 6000117277)
+#     define __USE_CONSTEXPR 1
+#     define __USE_NOEXCEPT 1
+#  endif
+#  if defined(NOTIFY_CC_MSVC) && defined(NOTIFY_CC_CLANG)
+// Clang and the Intel compiler support more C++ features than the Microsoft compiler
+// so make sure we don't enable them if the MS headers aren't properly adapted.
+#     ifndef _HAS_CONSTEXPR
+#        undef NOTIFY_COMPILER_CONSTEXPR
+#     endif
+#     ifndef _HAS_DECLTYPE
+#        undef NOTIFY_COMPILER_DECLTYPE
+#     endif
+#     ifndef _HAS_INITIALIZER_LISTS
+#        undef NOTIFY_COMPILER_INITIALIZER_LISTS
+#     endif
+#     ifndef _HAS_NULLPTR_T
+#        undef NOTIFY_COMPILER_NULLPTR
+#     endif
+#     ifndef _HAS_RVALUE_REFERENCES
+#        undef NOTIFY_COMPILER_RVALUES_REFS
+#     endif
+#     ifndef _HAS_SCOPE_ENUM
+#        undef NOTIFY_COMPILER_CLASS_ENUM
+#     endif
+#     ifndef _HAS_TEMPLATE_ALIAS
+#        undef NOTIFY_COMPILER_TEMPLATE_ALIAS
+#     endif
+#     ifndef _HAS_VARIADIC_TEMPLATES
+#        undef NOTIFY_COMPILER_VARIADIC_TEMPLATES
+#     endif
+#  endif
+#  if defined(NOTIFY_COMPILER_THREADSAFE_STATICS) && defined(NOTIFY_OS_MAC)
+// Apple's low-level implementation of the C++ support library
+// (libc++abi.dylib, shared between libstdc++ and libc++) has deadlocks. The
+// C++11 standard requires the deadlocks to be removed, so this will eventually
+// be fixed; for now, let's disable this.
+#     undef NOTIFY_COMPILER_THREADSAFE_STATICS
+#  endif
+#endif // __cplusplus
+
+// C++11 keywords and expressions
+#ifdef NOTIFY_COMPILER_NULLPTR
+#  define NOTIFY_NULLPTR nullptr
+#else
+#  define NOTIFY_NULLPTR NULL
+#endif
+
+#ifdef NOTIFY_COMPILER_DEFAULT_MEMBERS
+#  define NOTIFY_DECL_EQ_DEFAULT = default
+#else
+#  define NOTIFY_DECL_EQ_DEFAULT
+#endif
+
+#ifdef NOTIFY_COMPILER_DELETE_MEMBERS
+#  define NOTIFY_DECL_EQ_DELETE = delete
+#else
+#  define NOTIFY_DECL_EQ_DELETE
+#endif
+
+// Don't break code that is already using NOTIFY_COMPILER_DEFAULT_DELETE_MEMBERS
+#if defined(NOTIFY_COMPILER_DEFAULT_MEMBERS) && defined(NOTIFY_COMPILER_DELETE_MEMBERS)
+#  define NOTIFY_COMPILER_DEFAULT_DELETE_MEMBERS
+#endif
+
+#ifdef NOTIFY_COMPILER_CONSTEXPR
+#  if defined(__cpp_constexpr) && __cpp_constexpr-0 >= 201304
+#     define NOTIFY_DECL_CONSTEXPR constexpr
+#     define NOTIFY_DECL_RELAXED_CONSTEXPR constexpr
+#     define NOTIFY_CONSTEXPR constexpr
+#     define NOTIFY_RELAXED_CONSTEXPR constexpr
+#  else
+#     define NOTIFY_DECL_CONSTEXPR constexpr
+#     define NOTIFY_DECL_RELAXED_CONSTEX
+#     define NOTIFY_CONSTEXPR constexpr
+#     define NOTIFY_RELAXED_CONSTEXPR const
+#  endif
+#endif
+
+#ifdef NOTIFY_COMPILER_EXPLICIT_OVERRIDES
+#  define NOTIFY_DECL_OVERRIDE override
+#  define NOTIFY_DECL_FINAL final
+#else
+#  ifndef NOTIFY_DECL_OVERRIDE
+#     define NOTIFY_DECL_OVERRIDE
+#  endif
+#  ifndef NOTIFY_DECL_FINAL
+#     define NOTIFY_DECL_FINAL
+#  endif
+#endif
+
+#ifdef NOTIFY_COMPILER_NOEXCEPT
+#  define NOTIFY_DECL_NOEXCEPT noexcept
+#  define NOTIFY_DECL_NOEXCEPT_EXPR(x) noexcept(x)
+#  ifdef NOTIFY_DECL_NOTHROW
+#     undef NOTIFY_DECL_NOTHROW // override with C++11 noexcept if available
+#  endif
+#else
+#  define NOTIFY_DECL_NOEXCEPT
+#  define NOTIFY_DECL_NOEXCEPT_EXPR(x)
+#endif
+
+#if defined(NOTIFY_COMPILER_ALIGNOF)
+#  undef NOTIFY_ALIGNOF
+#  define NOTIFY_ALIGNOF(x) alignof(x)
+#endif
+
+#if defined(NOTIFY_COMPILER_ALIGNAS)
+#  undef NOTIFY_DECL_ALIGN
+#  define NOTIFY_DECL_ALIGN(n) alignas(n)
+#endif
+
+#ifndef NOTIFY_NORETURN
+#  define NOTIFY_NORETURN
+#endif
+
+#ifndef NOTIFY_LIKELY
+#  define NOTIFY_LIKELY(x) (x)
+#endif
+
+#ifndef NOTIFY_UNLIKELY
+#  define NOTIFY_UNLIKELY(x) (x)
+#endif
+
+#ifndef NOTIFY_ASSUME_IMPL
+#  define NOTIFY_ASSUME_IMPL(expr) notify_noop()
+#endif
+
+#ifndef NOTIFY_UNREACHABLE_IMPL
+#  define NOTIFY_UNREACHABLE_IMPL() notify_noop()
+#endif
+
+#ifndef NOTIFY_ALLOC_SIZE
+#  define NOTIFY_ALLOC_SIZE(x)
+#endif
+
+#ifndef NOTIFY_REQUIRED_RESULT
+#  define NOTIFY_REQUIRED_RESULT
+#endif
+
+#ifndef NOTIFY_DECL_DEPRECATED
+#  define NOTIFY_DECL_DEPRECATED
+#endif
+
+#ifndef NOTIFY_DECL_VARIABLE_DEPRECATED
+#  define NOTIFY_DECL_VARIABLE_DEPRECATED NOTIFY_DECL_DEPRECATED
+#endif
+
+#ifndef NOTIFY_DECL_DEPRECATED_X
+#  define NOTIFY_DECL_DEPRECATED_X(text) NOTIFY_DECL_DEPRECATED
+#endif
+
+#ifndef NOTIFY_DECL_EXPORT
+#  define NOTIFY_DECL_EXPORT
+#endif
+
+#ifndef NOTIFY_DECL_IMPORT
+#  define NOTIFY_DECL_IMPORT
+#endif
+
+#ifndef NOTIFY_DECL_HIDDEN
+#  define NOTIFY_DECL_HIDDEN
+#endif
+
+#ifndef NOTIFY_DECL_UNUSED
+#  define NOTIFY_DECL_UNUSED
+#endif
+
+#ifndef NOTIFY_DECL_UNUSED_MEMBER
+#  define NOTIFY_DECL_UNUSED_MEMBER
+#endif
+
+#ifndef NOTIFY_FUNC_INFO
+#  if defined(NOTIFY_OS_SOLARIS) || defined(NOTIFY_CC_XLC)
+#     define NOTIFY_FUNC_INFO __FILE__ "(line number unavailable)"
+#  else
+#     define NOTIFY_FUNC_INFO __FILE__ ":" NOTIFY_STRINGIFY(__LINE__)
+#  endif
+#endif
+
+#ifndef NOTIFY_DECL_CF_RETURNS_RETAINED
+#  define NOTIFY_DECL_CF_RETURNS_RETAINED
+#endif
+
+#ifndef NOTIFY_DECL_NS_RETURNS_AUTORELEASED
+#  define NOTIFY_DECL_NS_RETURNS_AUTORELEASED
+#endif
+
+#ifndef NOTIFY_DECL_PURE_FUNCTION
+#  define NOTIFY_DECL_PURE_FUNCTION
+#endif
+
+#ifndef NOTIFY_DECL_CONST_FUNCTION
+#  define NOTIFY_DECL_CONST_FUNCTION
+#endif
+
+#ifndef NOTIFY_MAKE_UNCHECKED_ARRAY_ITERATOR
+#  define NOTIFY_MAKE_UNCHECKED_ARRAY_ITERATOR(x) (x)
+#endif
+
+#ifndef NOTIFY_MAKE_CHECKED_ARRAY_ITERATOR
+#  define NOTIFY_MAKE_CHECKED_ARRAY_ITERATOR(x, N) (x)
+#endif
+
+// SG10's SD-6 feature detection and some useful extensions from Clang and GCC
+// https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations
+// http://clang.llvm.org/docs/LanguageExtensions.html#feature-checking-macros
+#ifdef __has_builtin
+#  define NOTIFY_HAS_BUILTIN(x) __has_builtin(x)
+#else
+#  define NOTIFY_HAS_BUILTIN(x) 0
+#endif
+
+#ifdef __has_attribute
+#  define NOTIFY_HAS_ATTRIBUTE(x) __has_attribute(x)
+#else
+#  define NOTIFY_HAS_ATTRIBUTE(x) 0
+#endif
+
+#ifdef __has_cpp_attribute
+#  define NOTIFY_HAS_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
+#else
+#  define NOTIFY_HAS_CPP_ATTRIBUTE(x) 0
+#endif
+
+#ifdef __has_include
+#  define NOTIFY_HAS_INCLUDE(x) __has_include(x)
+#else
+#  defone NOTIFY_HAS_INCLUDE(x) 0
+#endif
+
+#ifdef __has_include_next
+#  define NOTIFY_HAS_INCLUDE_NEXT(x) __has_include_next(x)
+#else
+#  define NOTIFY_HAS_INCLUDE_NEXT(x) 0
+#endif
+
+// Warning/diagnostic handling
+#define NOTIFY_DO_PRAGMA(text) _Pragma(#text)
+#if defined(NOTIFY_CC_INTEL) && defined(NOTIFY_CC_MSVC)
+// icl.exe: Intel compiler on Windows
+#  undef NOTIFY_DO_PRAGMA
+#  define NOTIFY_WARNING_PUSH                  __pragma(warning(push))
+#  define NOTIFY_WARNING_POP                   __pragma(warning(pop))
+#  define NOTIFY_WARNING_DISABLE_MSVC(number)
+#  define NOTIFY_WARNING_DISABLE_INTEL(number) __pragma(warning(disable: number))
+#  define NOTIFY_WARNING_DISABLE_CLANG(text)
+#  define NOTIFY_WARNING_DISABLE_GCC(text)
+#  define NOTIFY_WARNING_DISABLE_DEPRECATED    NOTIFY_WARNING_DISABLE_INTEL(1478 1786)
+#elif NOTIFY_CC_INTEL
+// icc: Intel compiler on Linux or OS X
+#  define NOTIFY_WARNING_PUSH                  NOTIFY_DO_PRAGMA(warning(push))
+#  define NOTIFY_WARNING_POP                   NOTIFY_DO_PRAGMA(warning(pop))
+#  define NOTIFY_WARNING_DISABLE_INTEL(number) NOTIFY_DO_PRAGMA(warning(disable: number))
+#  define NOTIFY_WARNING_DISABLE_MSVC(number)
+#  define NOTIFY_WARNING_DISABLE_CLANG(text)
+#  define NOTIFY_WARNING_DISABLE_GCC(text)
+#  define NOTIFY_WARNING_DISABLE_DEPRECATED    NOTIFY_WARNING_DISABLE_INTEL(1478 1786)
+#elif defined(NOTIFY_CC_MSVC) && _MSC_VER >= 1500 && !defined(NOTIFY_CC_CLANG)
+#  undef NOTIFY_DO_PRAGMA                           /* not needed */
+#  define NOTIFY_WARNING_PUSH                  __pragma(warning(push))
+#  define NOTIFY_WARNING_POP                   __pragma(warning(pop))
+#  define NOTIFY_WARNING_DISABLE_MSVC(number)  __pragma(warning(disable: number))
+#  define NOTIFY_WARNING_DISABLE_INTEL(number)
+#  define NOTIFY_WARNING_DISABLE_CLANG(text)
+#  define NOTIFY_WARNING_DISABLE_GCC(text)
+#  define NOTIFY_WARNING_DISABLE_DEPRECATED    NOTIFY_WARNING_DISABLE_MSVC(4996)
+#elif defined(NOTIFY_CC_CLANG)
+#  define NOTIFY_WARNING_PUSH                  NOTIFY_DO_PRAGMA(clang diagnostic push)
+#  define NOTIFY_WARNING_POP                   NOTIFY_DO_PRAGMA(clang diagnostic pop)
+#  define NOTIFY_WARNING_DISABLE_CLANG(text)   NOTIFY_DO_PRAGMA(clang diagnostic ignored text)
+#  define NOTIFY_WARNING_DISABLE_GCC(text)
+#  define NOTIFY_WARNING_DISABLE_INTEL(number)
+#  define NOTIFY_WARNING_DISABLE_MSVC(number)
+#  define NOTIFY_WARNING_DISABLE_DEPRECATED    NOTIFY_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
+#elif defined(NOTIFY_CC_GNU) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
+#  define NOTIFY_WARNING_PUSH                  NOTIFY_DO_PRAGMA(GCC diagnostic push)
+#  define NOTIFY_WARNING_POP                   NOTIFY_DO_PRAGMA(GCC diagnostic pop)
+#  define NOTIFY_WARNING_DISABLE_GCC(text)     NOTIFY_DO_PRAGMA(GCC diagnostic ignored text)
+#  define NOTIFY_WARNING_DISABLE_CLANG(text)
+#  define NOTIFY_WARNING_DISABLE_INTEL(number)
+#  define NOTIFY_WARNING_DISABLE_MSVC(number)
+#  define NOTIFY_WARNING_DISABLE_DEPRECATED    NOTIFY_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+#else // All other compilers, GCC < 4.6 and MSVC < 2008
+#  define NOTIFY_WARNING_PUSH
+#  define NOTIFY_WARNING_POP
+#  define NOTIFY_WARNING_DISABLE_INTEL(number)
+#  define NOTIFY_WARNING_DISABLE_CLANG(text)
+#  define NOTIFY_WARNING_DISABLE_GCC(text)
+#  define NOTIFY_WARNING_DISABLE_MSVC(number)
+#  define NOTIFY_WARNING_DISABLE_DEPRECATED
+#endif
+
+#ifdef NOTIFY_COMPILER_RVALUE_REFS
+#  define notify_move(x) std::move(x)
+#else
+#  define notify_move(x) (x)
+#endif
+
+#if NOTIFY_HAS_CPP_ATTRIBUTE(fallthrough)
+#  define NOTIFY_FALLTHROUGH() [[fallthrough]]
+#elif defined(__cplusplus)
+// Clang can not parse namespaced attributes in C mode, but defines __has_cpp_attribute
+#  if NOTIFY_HAS_CPP_ATTRIBUTE(clang::fallthrough)
+#     define NOTIFY_FALLTHROUGH() [[clang::fallthrough]]
+#  elif NOTIFY_HAS_CPP_ATTRIBUTE(gnu::fallthrough)
+#     define NOTIFY_FALLTHROUGH() [[gnu::fallthrough]]
+#  endif
+#endif
+
+#ifndef NOTIFY_FALLTHROUGH
+#  if defined(NOTIFY_CC_GNU) && NOTIFY_CC_GNU >= 700
+#    define NOTIFY_FALLTHROUGH() __attribute__((fallthrough))
+#  else
+#    define NOTIFY_FALLTHROUGH() (void)0
+#  endif
+#endif
+
 #endif //NOTIFY_COMPILERDETECTION_H

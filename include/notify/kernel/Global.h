@@ -16,6 +16,9 @@
 #ifndef LIBNOTIFY_GLOBAL_H
 #define LIBNOTIFY_GLOBAL_H
 
+#define NOTIFY_STRINGIFY2(x) #x
+#define NOTIFY_STRINGIFY(x) NOTIFY_STRINGIFY2(x)
+
 #include "notify/kernel/SystemDetection.h"
 #include "notify/kernel/ProcessorDetection.h"
 
@@ -26,6 +29,8 @@
 #if defined(__MACH__) && defined(__APPLE__)
 #  define NOTIFY_OF_MACH_O
 #endif
+
+inline void notify_noop(void) {}
 
 template <typename T>
 static inline T *notify_get_ptr_helper(T *ptr)
