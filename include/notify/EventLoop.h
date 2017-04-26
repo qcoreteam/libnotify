@@ -17,9 +17,9 @@
 #define LIBNOTIFY_EVENTLOOP_H
 
 
-class EventLoop {
+class EventLoop
+{
 
 };
-
 
 #endif //LIBNOTIFY_EVENTLOOP_H
