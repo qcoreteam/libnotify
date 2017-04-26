@@ -13,18 +13,7 @@
 //
 // Created by zzu_softboy on 26/04/2017.
 
-#ifndef NOTIFY_EVENTDISPATCHER_H
-#define NOTIFY_EVENTDISPATCHER_H
+#ifndef NOTIFY_EVENTMGR_H
+#define NOTIFY_EVENTMGR_H
 
-namespace notify
-{
-   enum class SupportedBackendTypes
-   {
-      Poll   = 0x01,
-      Select = 0x02,
-      Epoll  = 0x03,
-      Kqueue = 0x04
-   };
-};
-
-#endif //NOTIFY_EVENTDISPATCHER_H
+#endif //NOTIFY_EVENTMGR_H
