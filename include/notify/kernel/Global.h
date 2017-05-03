@@ -13,8 +13,8 @@
 //
 // Created by zzu_softboy on 24/04/2017.
 
-#ifndef LIBNOTIFY_GLOBAL_H
-#define LIBNOTIFY_GLOBAL_H
+#ifndef NOTIFY_KERNEL_GLOBAL_H
+#define NOTIFY_KERNEL_GLOBAL_H
 
 #define NOTIFY_STRINGIFY2(x) #x
 #define NOTIFY_STRINGIFY(x) NOTIFY_STRINGIFY2(x)
@@ -89,4 +89,4 @@ enum {NOTIFY_STATIC_ASSERT_PRIVATE_JOIN(n_static_assert_result, __LINE__) = size
 #  define NOTIFY_STATIC_ASSERT_X(condition, message) NOTIFY_STATIC_ASSERT(condition)
 #endif
 
-#endif //LIBNOTIFY_GLOBAL_H
+#endif //NOTIFY_KERNEL_GLOBAL_H

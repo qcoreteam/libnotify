@@ -13,12 +13,12 @@
 //
 // Created by zzu_softboy on 24/04/2017.
 
-#ifndef LIBNOTIFY_GLOBAL_H
+#ifndef NOTIFY_KERNEL_GLOBAL_H
 # include "notify/kernel/Global.h"
 #endif
 
-#ifndef NOTIFY_PROCESSORDETECTION_H
-#define NOTIFY_PROCESSORDETECTION_H
+#ifndef NOTIFY_KERNEL_PROCESSORDETECTION_H
+#define NOTIFY_KERNEL_PROCESSORDETECTION_H
 
 /*
  * This file uses preprocessor #defines to set various Q_PROCESSOR_* #defines
@@ -268,4 +268,4 @@
 #  define NOTIFY_PROCESSOR_WORDSIZE NOTIFY_POINTER_SIZE
 #endif
 
-#endif //NOTIFY_PROCESSORDETECTION_H
+#endif //NOTIFY_KERNEL_PROCESSORDETECTION_H

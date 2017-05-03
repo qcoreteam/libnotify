@@ -13,12 +13,12 @@
 //
 // Created by zzu_softboy on 24/04/2017.
 
-#ifndef LIBNOTIFY_GLOBAL_H
+#ifndef NOTIFY_KERNEL_GLOBAL_H
 # include "notify/kernel/Global.h"
 #endif
 
-#ifndef NOTIFY_SYSTEMDETECTION_H
-#define NOTIFY_SYSTEMDETECTION_H
+#ifndef NOTIFY_KERNEL_SYSTEMDETECTION_H
+#define NOTIFY_KERNEL_SYSTEMDETECTION_H
 
 /*
  * The operating system, must be one of: (NOTIFY_OS_x)
@@ -235,4 +235,4 @@
 #  define NOTIFY_LINUXBASE
 #endif
 
-#endif //NOTIFY_SYSTEMDETECTION_H
+#endif //NOTIFY_KERNEL_SYSTEMDETECTION_H

@@ -17,8 +17,8 @@
 # include "notify/kernel/Global.h"
 #endif
 
-#ifndef NOTIFY_COMPILERDETECTION_H
-#define NOTIFY_COMPILERDETECTION_H
+#ifndef NOTIFY_KERNEL_COMPILERDETECTION_H
+#define NOTIFY_KERNEL_COMPILERDETECTION_H
 
 // The compiler, must be one of: (NOTIFY_CC_x)
 
@@ -1296,4 +1296,4 @@
 #  endif
 #endif
 
-#endif //NOTIFY_COMPILERDETECTION_H
+#endif //NOTIFY_KERNEL_COMPILERDETECTION_H

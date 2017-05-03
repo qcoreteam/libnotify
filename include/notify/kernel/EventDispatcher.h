@@ -13,8 +13,8 @@
 //
 // Created by zzu_softboy on 26/04/2017.
 
-#ifndef NOTIFY_EVENTDISPATCHER_H
-#define NOTIFY_EVENTDISPATCHER_H
+#ifndef NOTIFY_KERNEL_EVENTDISPATCHER_H
+#define NOTIFY_KERNEL_EVENTDISPATCHER_H
 
 namespace notify
 {
@@ -27,4 +27,4 @@ namespace notify
    };
 };
 
-#endif //NOTIFY_EVENTDISPATCHER_H
+#endif //NOTIFY_KERNEL_EVENTDISPATCHER_H

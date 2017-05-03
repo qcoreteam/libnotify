@@ -13,7 +13,7 @@
 //
 // Created by zzu_softboy on 26/04/2017.
 
-#ifndef NOTIFY_TCPSOCKET_H
-#define NOTIFY_TCPSOCKET_H
+#ifndef NOTIFY_SOCKET_TCPSOCKET_H
+#define NOTIFY_SOCKET_TCPSOCKET_H
 
-#endif //NOTIFY_TCPSOCKET_H
+#endif //NOTIFY_SOCKET_TCPSOCKET_H
