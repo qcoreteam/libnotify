@@ -33,10 +33,25 @@ public:
    {
       return i;
    }
-#  if !defined(__LP64__)
+#if !defined(__LP64__)
    NOTIFY_DECL_CONSTEXPR inline Flag(long ai) NOTIFY_DECL_NOEXCEPT : i(int(ai)){}
-   NOTIFY_DECL_CONSTEXPR inline Flag(unsigned long ai) NOTIFY_DECL_NOEXCEPT : (int(long(ai))){}
+   NOTIFY_DECL_CONSTEXPR inline Flag(ulong ai) NOTIFY_DECL_NOEXCEPT : i(int(long(ai))){}
 #endif
+   NOTIFY_DECL_CONSTEXPR inline Flag(uint ai) NOTIFY_DECL_NOEXCEPT : i(int(ai)){}
+   NOTIFY_DECL_CONSTEXPR inline Flag(short ai) NOTIFY_DECL_NOEXCEPT : i(int(ai)){}
+   NOTIFY_DECL_CONSTEXPR inline Flag(ushort ai) NOTIFY_DECL_NOEXCEPT : i(int(uint(ai))){}
+   NOTIFY_DECL_CONSTEXPR inline operator uint() const NOTIFY_DECL_NOEXCEPT
+   {
+      return uint(i);
+   }
+};
+
+template<typename Enum>
+class Flags
+{
+   NOTIFY_STATIC_ASSERT_X((sizeof(Enum) <= sizeof(int)),
+                          "Flags uses an int as storage, so an enum with underlying "
+                                "short than int will overflow.");
 };
 
 };

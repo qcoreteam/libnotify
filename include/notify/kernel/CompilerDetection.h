@@ -771,8 +771,8 @@
 #     if NOTIFY_CC_GNU >= 403
 // C++11 features supported in GCC 4.3:
 #        define NOTIFY_COMPILER_DECLTYPE
-#        define NOTIFY_RVALUE_REFS
-#        define NOTIFY_STATIC_ASSERT
+#        define NOTIFY_COMPILER_RVALUE_REFS
+#        define NOTIFY_COMPILER_STATIC_ASSERT
 #     endif
 #     if NOTIFY_CC_GNU >= 404
 // C++11 features supported in GCC 4.4:

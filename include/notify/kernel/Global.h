@@ -26,6 +26,33 @@
 #include "notify/kernel/ProcessorDetection.h"
 #include "notify/kernel/CompilerDetection.h"
 
+// 定义一些数据类型的别名
+
+using n_int8 = signed char;
+using n_uint8 = unsigned char;
+using n_int16 = short;
+using n_uint16 = unsigned short;
+
+#if defined(NOTIFY_OS_WIN) && !defined(NOTIFY_CC_GNU)
+#  define N_INT64_C(c) c ## i64
+#  define N_UINT64_C(c) c ## ui64
+using n_int64 = __int64;
+using n_uint64 = unsigned __int64;
+#else
+#  define N_INT64_C(c) static_cast<long long>(c ## LL)
+#  define N_UINT64_C(c) static_cast<unsigned long long>(c ## ULL)
+using n_int64 = long long;
+using n_uint64 = unsigned long long;
+#endif
+
+using n_longlong = n_int64;
+using n_ulonglong = n_uint64;
+
+using uchar = unsigned char;
+using ushort = unsigned short;
+using uint = unsigned int;
+using ulong = unsigned long;
+
 #if defined(__ELF__)
 #  define NOTIFY_OF_ELF
 #endif
@@ -73,7 +100,7 @@ friend class Class;
 #define NOTIFY_D(Class) Class##Private * const implPtr = getImplPtr()
 #define NOTIFY_Q(Class) Class * const apiPtr = getApiPtr()
 
-#ifdef NOTIFY_STATIC_ASSERT
+#ifdef NOTIFY_COMPILER_STATIC_ASSERT
 #  define NOTIFY_STATIC_ASSERT(condition) static_assert(bool(condition), #condition)
 #  define NOTIFY_STATIC_ASSERT_X(condition, message) static_assert(bool(condition), message)
 #else
