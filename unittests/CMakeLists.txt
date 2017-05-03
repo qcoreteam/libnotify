@@ -1,4 +1,6 @@
 add_custom_target(UnitTests)
 set_target_properties(UnitTests PROPERTIES FOLDER "UnitTests")
-
-notify_add_unittest(UnitTests KernelTest EventMgrTest.cpp)
+set(TEST_SRCS
+        EventMgrTest.cpp
+        FlagsTest.cpp)
+notify_add_unittest(UnitTests KernelTest ${TEST_SRCS})

@@ -16,6 +16,9 @@
 #ifndef NOTIFY_KERNEL_GLOBAL_H
 #define NOTIFY_KERNEL_GLOBAL_H
 
+#include <type_traits>
+#include <cstddef>
+
 #define NOTIFY_STRINGIFY2(x) #x
 #define NOTIFY_STRINGIFY(x) NOTIFY_STRINGIFY2(x)
 

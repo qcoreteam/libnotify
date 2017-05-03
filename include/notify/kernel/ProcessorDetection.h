@@ -20,6 +20,8 @@
 #ifndef NOTIFY_KERNEL_PROCESSORDETECTION_H
 #define NOTIFY_KERNEL_PROCESSORDETECTION_H
 
+#include <endian.h>
+
 /*
  * This file uses preprocessor #defines to set various Q_PROCESSOR_* #defines
  * based on the following patterns:
@@ -233,10 +235,10 @@
 #  if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == NOTIFY_LITTLE_ENDIAN || __BYTE_ORDER__ == NOTIFY_BIG_ENDIAN)
 // Reuse __BYTE_ORDER__ as-is, since our NOTIFY_*_ENDIAN #defines match the preprocessor defaults
 #     define NOTIFY_BYTE_ORDER __BYTE_ORDER__
-#  elif defined(__BIG_ENDIAN__) || defined(_big_endian__) || defined(_BIG_ENDIAN)
+#  elif defined(__BIG_ENDIAN__) || defined(_big_endian__) || defined(__BIG_ENDIAN)
 #     define NOTIFY_BYTE_ORDER NOTIFY_BIG_ENDIAN
-#  elif defined(__LITTLE_ENDIAN__) || defined(_little_endian__) || defined(_LITTLE_ENDIAN) \
-        || defined(WINAPI_FAMILY) // WinRT is always little-endian according to MSDN.
+#  elif defined(__LITTLE_ENDIAN__) || defined(_little_endian__) || defined(_LITTLE_ENDIAN) ||\
+        defined(__LITTLE_ENDIAN) || defined(WINAPI_FAMILY) // WinRT is always little-endian according to MSDN.
 #     define NOTIFY_BYTE_ORDER NOTIFY_LITTLE_ENDIAN
 #  else
 #     error "Unable to determin byte order!"

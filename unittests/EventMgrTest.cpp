@@ -6,9 +6,6 @@
 #include "notify/kernel/Global.h"
 
 #include <iostream>
-namespace
-{
-   TEST(EventMgrTest, AddListener) {
-      std::cout << "fuck google test" << std::endl;
-   }
+TEST(EventMgrTest, AddListener) {
+   std::cout << "fuck google test" << std::endl;
 }

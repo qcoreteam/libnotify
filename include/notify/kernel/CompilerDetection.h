@@ -122,7 +122,7 @@
 #     define NOTIFY_DECL_IMPORT __declspec(dllimport)
 #  endif
 #elif defined(__GNUC__)
-#  define NOTIFY_DECL_GNU (__GNUC__ * 100 + __GNUC_MINOR__)
+#  define NOTIFY_CC_GNU (__GNUC__ * 100 + __GNUC_MINOR__)
 #  if defined(__MINGW32__)
 #    define NOTIFY_CC_MINGW
 #  endif
@@ -1214,7 +1214,7 @@
 #ifdef __has_include
 #  define NOTIFY_HAS_INCLUDE(x) __has_include(x)
 #else
-#  defone NOTIFY_HAS_INCLUDE(x) 0
+#  define NOTIFY_HAS_INCLUDE(x) 0
 #endif
 
 #ifdef __has_include_next

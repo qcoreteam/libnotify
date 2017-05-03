@@ -20,6 +20,7 @@
 #ifdef NOTIFY_COMPILER_INITIALIZER_LISTS
 #include <initializer_list>
 #endif
+
 namespace notify
 {
 class Flag
