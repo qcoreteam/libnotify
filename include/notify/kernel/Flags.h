@@ -16,4 +16,28 @@
 #ifndef NOTIFY_KERNEL_FLAGS_H
 #define NOTIFY_KERNEL_FLAGS_H
 
+#include "notify/kernel/Global.h"
+#ifdef NOTIFY_COMPILER_INITIALIZER_LISTS
+#include <initializer_list>
+#endif
+namespace notify
+{
+class Flag
+{
+   int i;
+public:
+   NOTIFY_DECL_CONSTEXPR inline Flag(int ai) NOTIFY_DECL_NOEXCEPT : i(ai)
+   {}
+   NOTIFY_DECL_CONSTEXPR inline operator int() const NOTIFY_DECL_NOEXCEPT
+   {
+      return i;
+   }
+#  if !defined(__LP64__)
+   NOTIFY_DECL_CONSTEXPR inline Flag(long ai) NOTIFY_DECL_NOEXCEPT : i(int(ai)){}
+   NOTIFY_DECL_CONSTEXPR inline Flag(unsigned long ai) NOTIFY_DECL_NOEXCEPT : (int(long(ai))){}
+#endif
+};
+
+};
+
 #endif //NOTIFY_KERNEL_FLAGS_H

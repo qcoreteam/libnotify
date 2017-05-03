@@ -669,6 +669,7 @@
 #        define NOTIFY_COMPILER_INHERITING_CONSTRUCTORS
 #     endif
 #     if __has_feature(cxx_generalized_initializers)
+#        define NOTIFY_COMPILER_INITIALIZER_LISTS
 #        define NOTIFY_COMPILER_UNIFORM_INIT /* both covered by this feature macro, according to docs */
 #     endif
 #     if __has_feature(cxx_lambdas)
@@ -748,6 +749,8 @@
 
 #  if defined(__has_warning)
 #     if __has_warning("-Wunused-private-field")
+#        define NOTIFY_DECL_UNUSED_MEMBER NOTIFY_DECL_UNUSED
+#     endif
 #  endif
 #endif // NOTIFY_CC_CLANG
 
@@ -1055,6 +1058,11 @@
 #     define NOTIFY_CONSTEXPR constexpr
 #     define NOTIFY_RELAXED_CONSTEXPR const
 #  endif
+#else
+#  define NOTIFY_DECL_CONSTEXPR
+#  define NOTIFY_DECL_RELAXED_CONSTEX
+#  define NOTIFY_CONSTEXPR const
+#  define NOTIFY_RELAXED_CONSTEXPR const
 #endif
 
 #ifdef NOTIFY_COMPILER_EXPLICIT_OVERRIDES

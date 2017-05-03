@@ -21,6 +21,7 @@
 
 #include "notify/kernel/SystemDetection.h"
 #include "notify/kernel/ProcessorDetection.h"
+#include "notify/kernel/CompilerDetection.h"
 
 #if defined(__ELF__)
 #  define NOTIFY_OF_ELF
