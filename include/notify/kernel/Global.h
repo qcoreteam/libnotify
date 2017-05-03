@@ -69,4 +69,24 @@ friend class Class;
 #define NOTIFY_D(Class) Class##Private * const implPtr = getImplPtr()
 #define NOTIFY_Q(Class) Class * const apiPtr = getApiPtr()
 
+#ifdef NOTIFY_STATIC_ASSERT
+#  define NOTIFY_STATIC_ASSERT(condition) static_assert(bool(condition), #condition)
+#  define NOTIFY_STATIC_ASSERT_X(condition, message) static_assert(bool(condition), message)
+#else
+// Intentionally undefined
+template <bool Test> class NStaticAssertFailure;
+template <> class NStaticAssertFailure<true> {};
+
+#  define NOTIFY_STATIC_ASSERT_PRIVATE_JOIN(A, B) NOTIFY_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B)
+#  define NOTIFY_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B) A ## B
+#  ifdef __COUNTER__
+#     define NOTIFY_STATIC_ASSERT(condition) \
+enum {NOTIFY_STATIC_ASSERT_PRIVATE_JOIN(n_static_assert_result, __COUNTER__) = sizeof(NStaticAssertFailure<!!(condition)>)};
+#  else
+#     define NOTIFY_STATIC_ASSERT(condition) \
+enum {NOTIFY_STATIC_ASSERT_PRIVATE_JOIN(n_static_assert_result, __LINE__) = sizeof(NStaticAssertFailure<!!(condition)>)};
+#  endif // __COUNTER__
+#  define NOTIFY_STATIC_ASSERT_X(condition, message) NOTIFY_STATIC_ASSERT(condition)
+#endif
+
 #endif //LIBNOTIFY_GLOBAL_H
