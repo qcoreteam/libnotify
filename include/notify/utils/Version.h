@@ -17,18 +17,23 @@
 #define NOTIFY_UTILS_VERSION_H
 
 #include <vector>
+#include <array>
+#include <string>
+
 #include "notify/kernel/Global.h"
 
 namespace notify
 {
 
 using std::vector;
+using std::array;
+using std::string;
 
 class Version
 {
    static NOTIFY_DECL_CONSTEXPR n_uint8 InlineSegmentMarker = NOTIFY_BYTE_ORDER == NOTIFY_LITTLE_ENDIAN ?
                                                        0 : sizeof(void*) - 1;
-   static NOTIFY_DECL_CONSTEXPR n_uint8 InlineSegmentStartIdx = InlineSegmentMarker ? 1 : 0;
+   static NOTIFY_DECL_CONSTEXPR n_uint8 InlineSegmentStartIdx = !InlineSegmentMarker ? 1 : 0;
    static NOTIFY_DECL_CONSTEXPR n_uint8 InlineSegmentCount = sizeof(void*) - 1;
    NOTIFY_STATIC_ASSERT(InlineSegmentCount >= 3);
 
@@ -49,8 +54,8 @@ class Version
 
       SegmentStorage(const vector<int> &segment)
       {
-         if (dataFitsInline(segment.begin(), segment.size())) {
-
+         if (dataFitsInline(segment)) {
+            setInlineData(segment);
          } else {
             pointerSegments = new vector<int>(segment);
          }
@@ -68,7 +73,7 @@ class Version
       SegmentStorage &operator=(const SegmentStorage &other)
       {
          if (isUsingPointer() && other.isUsingPointer()) {
-            *pointerSegments = *other.isUsingPointer();
+            *pointerSegments = *other.pointerSegments;
          } else if (other.isUsingPointer()) {
             pointerSegments = new vector<int>(*other.pointerSegments);
          } else {
@@ -89,14 +94,29 @@ class Version
 
       SegmentStorage &operator=(SegmentStorage &&other) NOTIFY_DECL_NOEXCEPT
       {
+         swap(dummy, other.dummy);
+         return *this;
+      }
 
+      explicit SegmentStorage(vector<int> &&segment)
+      {
+         if (dataFitsInline(segment)) {
+            setInlineData(segment);
+         } else {
+            pointerSegments = new vector<int>(std::move(segment));
+         }
       }
 #endif
-
-      void setInlineSize(int len)
+#ifdef NOTIFY_COMPILER_INITIALIZER_LISTS
+      SegmentStorage(std::initializer_list<int> args)
       {
-         inlineSegments[InlineSegmentMarker] = 1 + 2 * len;
+         if (dataFitsInline(args)) {
+            setInlineData(args);
+         } else {
+            pointerSegments = new vector<int>(args);
+         }
       }
+#endif
 
       bool isUsingPointer() const NOTIFY_DECL_NOEXCEPT
       {
@@ -131,14 +151,9 @@ class Version
 
       void setSegments(int len, int major, int minor = 0, int patch = 0)
       {
-         if (major == n_int8(major) && min == n_int8(minor) && patch == n_int8(patch))
+         if (major == n_int8(major) && minor == n_int8(minor) && patch == n_int8(patch))
          {
-            int data[] = {
-                  major,
-                  minor,
-                  patch
-            };
-            setInlineData(data, len);
+            setInlineData(array<int, 3>{major, minor, patch});
          } else {
             setVector(len, major, minor, patch);
          }
@@ -151,41 +166,166 @@ class Version
          }
       }
    private:
-      static bool dataFitsInline(const int *data, int len)
+      template <typename T>
+      static bool dataFitsInline(const T &data)
       {
+         int len = data.size();
          if (len > InlineSegmentCount) {
             return false;
          }
+         auto iterator = data.begin();
          for (int i = 0; i < len; i++) {
-            if (data[i] != n_int8(data[i])) {
+            if (*iterator != n_int8(*iterator)) {
                return false;
             }
+            iterator++;
          }
          return true;
       }
 
-      void setInlineData(const int *data, int len)
+      template <typename T>
+      void setInlineData(const T &data)
       {
+         int len = data.size();
+         auto iterator = data.begin();
          dummy = 1 + len * 2;
 #if NOTIFY_BYTE_ORDER == NOTIFY_LITTLE_ENDIAN
          for (int i = 0; i < len; i++) {
-            dummy |= n_uintptr(data[i] & 0xFF) << (8 * (i + 1));
+            dummy |= n_uintptr(*iterator & 0xFF) << (8 * (i + 1));
+            iterator++;
          }
 #elif NOTIFY_BYTE_ORDER == NOTIFY_BIG_ENDIAN
          for (int i = 0; i < len; i++) {
-            dummy |= n_uintptr(data[i] & 0xFF) << (8 * (sizeof(void *) - i - 1))
+            dummy |= n_uintptr(iterator & 0xFF) << (8 * (sizeof(void *) - i - 1));
+            iterator++;
          }
 #else
          setInlineSize(len);
          for (int i = 0; i < len; i++) {
-            inlineSegments[InlineSegmentStartIdx + i] = data[i] & 0xFF;
+            inlineSegments[InlineSegmentStartIdx + i] = *iterator & 0xFF;
          }
 #endif
       }
 
       void setVector(int len, int major, int minor, int patch);
    } m_segments;
+
+public:
+   inline Version() NOTIFY_DECL_NOEXCEPT
+      : m_segments()
+   {}
+
+   inline explicit Version(const vector<int> &segment)
+      : m_segments(segment)
+   {}
+
+#ifdef NOTIFY_COMPILER_RVALUE_REFS
+   explicit Version(vector<int> &&segment)
+      : m_segments(std::move(segment))
+   {}
+#endif
+#ifdef NOTIFY_COMPILER_INITIALIZER_LISTS
+   inline Version(std::initializer_list<int> args)
+      : m_segments(args)
+   {}
+#endif
+
+   inline explicit Version(int major)
+   {
+      m_segments.setSegments(1, major);
+   }
+
+   inline explicit Version(int major, int minor)
+   {
+      m_segments.setSegments(2, major, minor);
+   }
+
+   inline explicit Version(int major, int minor, int patch)
+   {
+      m_segments.setSegments(3, major, minor, patch);
+   }
+
+   inline bool isNull() const NOTIFY_DECL_NOEXCEPT NOTIFY_REQUIRE_RESULT
+   {
+      return segmentCount() == 0;
+   }
+
+   inline bool isNormalized() const NOTIFY_DECL_NOEXCEPT NOTIFY_REQUIRE_RESULT
+   {
+      return isNull() || segmentAt(segmentCount() - 1) != 0;;
+   }
+
+   inline int major() const NOTIFY_DECL_NOEXCEPT NOTIFY_REQUIRE_RESULT
+   {
+      return segmentAt(0);
+   }
+
+   inline int minor() const NOTIFY_DECL_NOEXCEPT NOTIFY_REQUIRE_RESULT
+   {
+      return segmentAt(1);
+   }
+
+   inline int patch() const NOTIFY_DECL_NOEXCEPT NOTIFY_REQUIRE_RESULT
+   {
+      return segmentAt(2);
+   }
+
+   Version normalized() const NOTIFY_REQUIRE_RESULT;
+
+   vector<int> segments() const NOTIFY_REQUIRE_RESULT;
+
+   inline int segmentAt(int index) const NOTIFY_DECL_NOEXCEPT NOTIFY_REQUIRE_RESULT
+   {
+      return (m_segments.size() > index) ? m_segments.at(index) : 0;
+   }
+
+   inline int segmentCount() const NOTIFY_DECL_NOEXCEPT NOTIFY_REQUIRE_RESULT
+   {
+      return m_segments.size();
+   }
+
+   bool isPrefixOf(const Version &other) const NOTIFY_DECL_NOEXCEPT NOTIFY_REQUIRE_RESULT;
+
+   static int compare(const Version &left, const Version &right) NOTIFY_DECL_NOEXCEPT NOTIFY_REQUIRE_RESULT;
+
+   static NOTIFY_DECL_PURE_FUNCTION Version commonPrefix(const Version &left,
+                                                         const Version &right) NOTIFY_REQUIRE_RESULT;
+
+   string toString() const NOTIFY_REQUIRE_RESULT;
+
+   static NOTIFY_DECL_PURE_FUNCTION Version fromString(const string &string,
+                                                       int *suffixIndex = NOTIFY_NULLPTR) NOTIFY_REQUIRE_RESULT;
 };
+
+NOTIFY_REQUIRE_RESULT inline bool operator>(const Version &left, const Version &right) NOTIFY_DECL_NOEXCEPT
+{
+   return notify::Version::compare(left, right) > 0;
+}
+
+NOTIFY_REQUIRE_RESULT inline bool operator>=(const Version &left, const Version &right) NOTIFY_DECL_NOEXCEPT
+{
+   return notify::Version::compare(left, right) >= 0;
+}
+
+NOTIFY_REQUIRE_RESULT inline bool operator<(const Version &left, const Version &right) NOTIFY_DECL_NOEXCEPT
+{
+   return notify::Version::compare(left, right) < 0;
+}
+
+NOTIFY_REQUIRE_RESULT inline bool operator<=(const Version &left, const Version &right) NOTIFY_DECL_NOEXCEPT
+{
+   return notify::Version::compare(left, right) <= 0;
+}
+
+NOTIFY_REQUIRE_RESULT inline bool operator==(const Version &left, const Version &right) NOTIFY_DECL_NOEXCEPT
+{
+   return notify::Version::compare(left, right) == 0;
+}
+
+NOTIFY_REQUIRE_RESULT inline bool operator!=(const Version &left, const Version &right) NOTIFY_DECL_NOEXCEPT
+{
+   return notify::Version::compare(left, right) != 0;
+}
 
 };
 

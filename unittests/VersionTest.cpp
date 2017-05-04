@@ -15,8 +15,14 @@
 
 #include "gtest/gtest.h"
 #include "notify/utils/Version.h"
+#include <vector>
 
 #include <iostream>
-TEST(VersionTest, AddListener) {
-   std::cout << "fuck google test" << std::endl;
+
+TEST(VersionTest, constructorDefault) {
+   notify::Version version;
+   ASSERT_EQ(version.major(), 0);
+   ASSERT_EQ(version.minor(), 0);
+   ASSERT_EQ(version.patch(), 0);
+   ASSERT_EQ(version.segments(), std::vector<int>());
 }
