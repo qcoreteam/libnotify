@@ -20,7 +20,9 @@
 #ifndef NOTIFY_KERNEL_PROCESSORDETECTION_H
 #define NOTIFY_KERNEL_PROCESSORDETECTION_H
 
+#ifdef NOTIFY_HAVE_ENDIAN_H
 #include <endian.h>
+#endif
 
 /*
  * This file uses preprocessor #defines to set various Q_PROCESSOR_* #defines

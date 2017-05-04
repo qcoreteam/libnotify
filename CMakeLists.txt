@@ -86,6 +86,9 @@ option(NOTIFY_OPT_ENABLE_THREADS "Use threads if available." ON)
 option(NOTIFY_OPT_DISABLE_EXCEPTION "Disable Exception handling" OFF)
 option(NOTIFY_OPT_DISABLE_RTTI "Disable runtime type information" OFF)
 
+option(NOTIFY_OPT_FORCE_KQUEUE_CHECK
+       "When crosscompiling forces running a test program that verifies that Kqueue works with pipes. Note that this requires you to manually run the test program on the the cross compilation target to verify that it works. See cmake documentation for try_run for more details" OFF)
+
 if(NOTIFY_OPT_DISABLE_EXCEPTION AND NOT NOTIFY_OPT_DISABLE_RTTI)
    message(FATAL_ERROR "Exception handling requires RTTI. You must set NOTIFY_OPT_DISABLE_EXCEPTION to OFF")
 endif()
@@ -214,6 +217,7 @@ if(NOTIFY_HAVE_PORT_H)
    list(APPEND CMAKE_EXTRA_INCLUDE_FILES port.h)
 endif()
 check_include_file_cxx(signal.h NOTIFY_HAVE_SIGNAL_H)
+check_include_file_cxx(endian.h NOTIFY_HAVE_ENDIAN_H)
 check_include_file_cxx(stdarg.h NOTIFY_HAVE_STDARG_H)
 check_include_file_cxx(stddef.h NOTIFY_HAVE_STDDEF_H)
 check_include_file_cxx(stdint.h NOTIFY_HAVE_STDINT_H)
@@ -316,8 +320,22 @@ check_function_exists(getenv NOTIFY_HAVE_GETENV)
 check_function_exists(setrlimit NOTIFY_HAVE_SETRLIMIT)
 check_function_exists(umask NOTIFY_HAVE_UMASK)
 check_function_exists(unsetenv NOTIFY_HAVE_UNSETENV)
-
 check_function_exists(gethostbyname_r NOTIFY_HAVE_GETHOSTBYNAME_R)
+
+# check symbol
+check_symbol_exists(_POSIX_1_SOURCE "stdio.h" NOTIFY_POSIX_1_SOURCE)
+check_symbol_exists(_POSIX_SOURCE "stdio.h" NOTIFY_POSIX_SOURCE)
+
+# Verify kqueue works with pipes.
+if (NOTIFY_HAVE_KQUEUE)
+   if (CMAKE_CROSSCOMPILING AND NOT NOTIFY_FORCE_KQUEUE_CHECK)
+      message(WARNING "Cannot check if kqueue works with pipes when crosscompiling, use NOTIFY_FORCE_KQUEUE_CHECK to be sure (this requires manually running a test program on the cross compilation target)")
+      set(NOTIFY_HAVE_WORKING_KQUEUE 1)
+   else()
+      message(STATUS "Checking if kqueue works with pipes...")
+      include(CheckWorkingKqueue)
+   endif()
+endif()
 
 if(NOT APPLE)
    execute_process(
@@ -329,6 +347,18 @@ if(NOT APPLE)
       set(NOTIFY_LINKER_IS_GOLD ON)
    endif()
 endif()
+
+configure_file(
+    ${NOTIFY_INCLUDE_DIR}/notify/kernel/PrivateConfig.h.in
+    ${NOTIFY_EXTRA_INCLUDE_DIR}/notify/kernel/PrivateConfig.h
+    NEWLINE_STYLE UNIX)
+
+configure_file(
+    ${NOTIFY_INCLUDE_DIR}/notify/kernel/Config.h.in
+    ${NOTIFY_EXTRA_INCLUDE_DIR}/notify/kernel/Config.h
+    NEWLINE_STYLE UNIX)
+
+# generate config header
 
 # We use *.dylib rather than *.so on darwin.
 set(NOTIFY_PLUGIN_EXT ${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -346,8 +376,17 @@ endif()
 add_subdirectory(cmake/modules)
 add_subdirectory(src)
 
+# We run all tests with the different backends turned on one at a time.
+
+set(NOTIFY_BACKENDS "")
+
+if(NOTIFY_HAVE_KQUEUE)
+   list(APPEND NOTIFY_BACKENDS KQUEUE)
+endif()
+
 message(STATUS "")
 message(STATUS "(libnotify ${NOTIFY_VERSION})")
+message(STATUS "Available notify backends: ${NOTIFY_BACKENDS}")
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
 message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
