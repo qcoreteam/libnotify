@@ -13,27 +13,10 @@
 //
 // Created by zzu_softboy on 04/05/2017.
 
-#ifndef NOTIFY_KERNEL_CONFIG_H
-#define NOTIFY_KERNEL_CONFIG_H
+#include "gtest/gtest.h"
+#include "notify/utils/Version.h"
 
-#define NOTIFY_VERSION_MAJOR @NOTIFY_VERSION_MAJOR@
-#define NOTIFY_VERSION_MINOR @NOTIFY_VERSION_MINOR@
-#define NOTIFY_VERSION_PATCH @NOTIFY_VERSION_PATCH@
-
-// string representation of the libnotify version
-#define NOTIFY_PACKAGE_VERSION "@NOTIFY_PACKAGE_VERSION@"
-
-// Numeric representation of the libnotify version
-#define NOTIFY_NUMERIC_VERSION @NOTIFY_NUMERIC_VERSION@
-
-// The full version str of libnotify
-#define NOTIFY_VERSION "@NOTIFY_VERSION@"
-
-#define NOTIFY_PACKAGE_NAME "libnotify"
-
-#define NOTIFY_PAKCAGE "libnotify @NOTIFY_VERSION@"
-
-// Define if kqueue works correctly with pipes
-#cmakedefine NOTIFY_HAVE_WORKING_KQUEUE 1
-
-#endif //NOTIFY_KERNEL_CONFIG_H
+#include <iostream>
+TEST(VersionTest, AddListener) {
+   std::cout << "fuck google test" << std::endl;
+}

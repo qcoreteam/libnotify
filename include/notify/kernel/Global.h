@@ -16,6 +16,9 @@
 #ifndef NOTIFY_KERNEL_GLOBAL_H
 #define NOTIFY_KERNEL_GLOBAL_H
 
+#include "notify/kernel/PrivateConfig.h"
+#include "notify/kernel/Config.h"
+
 #include <type_traits>
 #include <cstddef>
 
@@ -32,6 +35,8 @@ using n_int8 = signed char;
 using n_uint8 = unsigned char;
 using n_int16 = short;
 using n_uint16 = unsigned short;
+using n_uint32 = unsigned int;
+using n_int32 = int;
 
 #if defined(NOTIFY_OS_WIN) && !defined(NOTIFY_CC_GNU)
 #  define N_INT64_C(c) c ## i64
@@ -119,5 +124,45 @@ enum {NOTIFY_STATIC_ASSERT_PRIVATE_JOIN(n_static_assert_result, __LINE__) = size
 #  endif // __COUNTER__
 #  define NOTIFY_STATIC_ASSERT_X(condition, message) NOTIFY_STATIC_ASSERT(condition)
 #endif
+
+template <int> struct NIntegerForSize;
+template <> struct NIntegerForSize<1> { using Unsigned = n_uint8; using Signed = n_int8; };
+template <> struct NIntegerForSize<2> { using Unsigned = n_uint16; using Signed = n_int16; };
+template <> struct NIntegerForSize<4> { using Unsigned = n_uint32; using Singed = n_int32; };
+template <> struct NIntegerForSize<8> { using Unsigned = n_uint64; using Signed = n_int64; };
+#if defined(NOTIFY_CC_GNU) && defined(__SIZEOF_INT128__)
+template <> struct NIntegerForSize<16>
+{
+   __extension__ using Unsigned = unsigned __int128;
+   __extension__ using Signed = __int128;
+};
+template <typename T> struct NIntegerForSizeof : NIntegerForSize<sizeof(T)>
+{};
+using n_registerint = NIntegerForSize<NOTIFY_PROCESSOR_WORDSIZE>::Signed;
+using n_registeruint = NIntegerForSize<NOTIFY_PROCESSOR_WORDSIZE>::Unsigned;
+using n_uintptr = NIntegerForSizeof<void*>::Unsigned;
+using n_ptrdiff = NIntegerForSizeof<void*>::Signed;
+using n_intptr = n_ptrdiff;
+#endif
+
+namespace internal
+{
+namespace swapexceptiontester
+{
+
+using std::swap;
+template <typename T>
+void check_swap(T &t) NOTIFY_DECL_NOEXCEPT_EXPR(noexcept(swap(t, t)));
+
+} // swapexceptiontester
+} // internal
+
+template <typename T>
+inline void swap(T &left, T &right)
+   NOTIFY_DECL_NOEXCEPT_EXPR(noexcept(internal::swapexceptiontester::check_swap(left)))
+{
+   using std::swap;
+   swap(left, right);
+}
 
 #endif //NOTIFY_KERNEL_GLOBAL_H
