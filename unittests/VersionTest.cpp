@@ -16,10 +16,35 @@
 #include "gtest/gtest.h"
 #include "notify/utils/Version.h"
 #include <vector>
-
+#include <map>
 #include <iostream>
+#include <string>
 
-TEST(VersionTest, constructorDefault) {
+using std::string;
+using std::vector;
+using notify::Version;
+
+class VersionTest : public ::testing::Test
+{
+protected:
+   static vector<vector<int>> m_instanceDataSegments;
+   static void SetUpTestCase()
+   {
+      m_instanceDataSegments.push_back(vector<int>());
+      m_instanceDataSegments.push_back(vector<int>());
+      m_instanceDataSegments.push_back(vector<int>());
+      m_instanceDataSegments.push_back(vector<int>());
+      m_instanceDataSegments.push_back(vector<int>());
+   }
+   static void TearDownTestCase()
+   {
+
+   }
+};
+
+vector<vector<int>> VersionTest::m_instanceDataSegments = vector<vector<int>>();
+
+TEST_F(VersionTest, constructorDefault) {
    notify::Version version;
    ASSERT_EQ(version.major(), 0);
    ASSERT_EQ(version.minor(), 0);
