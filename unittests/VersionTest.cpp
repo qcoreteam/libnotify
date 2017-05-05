@@ -30,6 +30,7 @@ protected:
    static vector<Version> m_instanceDataVersions;
    static vector<string> m_instanceDataExpectedStrings;
    static vector<string> m_instanceDataConstructionStrings;
+   static vector<bool> m_instanceDataIsNulls;
    static void SetUpTestCase()
    {
       m_instanceDataSegments.push_back(vector<int>());
@@ -54,13 +55,14 @@ protected:
       m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4}));
       m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5}));
       m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5, 6}));
-      m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5, 7}));
-      m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5, 7, 8}));
-      m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5, 7, 8}));
-      m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5, 7, 8}));
-      m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5, 7, 8}));
-      m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5, 7, 8}));
+      m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5, 6, 7}));
+      m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8}));
+      m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8}));
+      m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8}));
+      m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8}));
+      m_instanceDataSegments.push_back(vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8}));
       m_instanceDataSegments.push_back(vector<int>({10, 9}));
+      m_instanceDataSegments.push_back(vector<int>({10, 0}));
       m_instanceDataSegments.push_back(vector<int>({10, 0}));
       m_instanceDataSegments.push_back(vector<int>({127, 9}));
       m_instanceDataSegments.push_back(vector<int>({127, 0}));
@@ -91,13 +93,14 @@ protected:
       m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4})));
       m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5})));
       m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5, 6})));
-      m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5, 7})));
-      m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5, 7, 8})));
-      m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5, 7, 8})));
-      m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5, 7, 8})));
-      m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5, 7, 8})));
-      m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5, 7, 8})));
+      m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5, 6, 7})));
+      m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8})));
+      m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8})));
+      m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8})));
+      m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8})));
+      m_instanceDataVersions.push_back(Version(vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8})));
       m_instanceDataVersions.push_back(Version(vector<int>({10, 9})));
+      m_instanceDataVersions.push_back(Version(vector<int>({10, 0})));
       m_instanceDataVersions.push_back(Version(vector<int>({10, 0})));
       m_instanceDataVersions.push_back(Version(vector<int>({127, 9})));
       m_instanceDataVersions.push_back(Version(vector<int>({127, 0})));
@@ -143,6 +146,44 @@ protected:
       m_instanceDataExpectedStrings.push_back(string("128.9"));
       m_instanceDataExpectedStrings.push_back(string("128.0"));
       m_instanceDataExpectedStrings.push_back(string("128.0"));
+
+      m_instanceDataIsNulls.push_back(true);
+      m_instanceDataIsNulls.push_back(true);
+      m_instanceDataIsNulls.push_back(true);
+      m_instanceDataIsNulls.push_back(true);
+      m_instanceDataIsNulls.push_back(true);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
+      m_instanceDataIsNulls.push_back(false);
 
       m_instanceDataConstructionStrings.push_back(string());
       m_instanceDataConstructionStrings.push_back(string("text"));
@@ -192,7 +233,7 @@ vector<vector<int>> VersionTest::m_instanceDataSegments = vector<vector<int>>();
 vector<Version> VersionTest::m_instanceDataVersions = vector<Version>();
 vector<string> VersionTest::m_instanceDataExpectedStrings = vector<string>();
 vector<string> VersionTest::m_instanceDataConstructionStrings = vector<string>();
-
+vector<bool> VersionTest::m_instanceDataIsNulls = vector<bool>();
 TEST_F(VersionTest, constructorDefault) {
    notify::Version version;
    ASSERT_EQ(version.major(), 0);
@@ -1378,5 +1419,108 @@ TEST_F(VersionTest, commonPrefix)
       Version calculatedPrefix = Version::commonPrefix(left, right);
       ASSERT_EQ(calculatedPrefix, commonPrefix);
       ASSERT_EQ(calculatedPrefix.segments(), commonPrefix.segments());
+   }
+}
+
+TEST_F(VersionTest, normalized)
+{
+   {
+      Version version(0);
+      Version expected;
+      ASSERT_EQ(version.normalized(), expected);
+   }
+   {
+      Version version(1);
+      Version expected{1};
+      ASSERT_EQ(version.normalized(), expected);
+   }
+   {
+      Version version(1, 2);
+      Version expected{1, 2};
+      ASSERT_EQ(version.normalized(), expected);
+   }
+   {
+      Version version(1, 0);
+      Version expected{1};
+      ASSERT_EQ(version.normalized(), expected);
+   }
+   {
+      Version version(1, 0, 0);
+      Version expected{1};
+      ASSERT_EQ(version.normalized(), expected);
+   }
+   {
+      Version version(1, 0, 1);
+      Version expected{1, 0, 1};
+      ASSERT_EQ(version.normalized(), expected);
+   }
+   {
+      Version version{1, 0, 1, 0};
+      Version expected{1, 0, 1};
+      ASSERT_EQ(version.normalized(), expected);
+   }
+   {
+      Version version{0, 0, 1, 0};
+      Version expected{0, 0, 1};
+      ASSERT_EQ(version.normalized(), expected);
+   }
+}
+
+
+TEST_F(VersionTest, isNormalized)
+{
+   ASSERT_EQ(Version().isNormalized(), true);
+   ASSERT_EQ(Version{0}.isNormalized(), false);
+   ASSERT_EQ(Version{1}.isNormalized(), true);
+   ASSERT_EQ(Version({1, 2}).isNormalized(), true);
+   ASSERT_EQ(Version({1, 0}).isNormalized(), false);
+   ASSERT_EQ(Version({1, 0, 0}).isNormalized(), false);
+   ASSERT_EQ(Version({1, 0, 1}).isNormalized(), true);
+}
+
+TEST_F(VersionTest, assignment)
+{
+   int len = m_instanceDataSegments.size();
+   for (int i = 0; i < len; i++) {
+      const vector<int> &segment = m_instanceDataSegments.at(i);
+      Version original(segment);
+      Version version;
+      version = original;
+      const Version &expectedVersion = m_instanceDataVersions.at(i);
+      //std::cout << version.major() << std::endl;
+      ASSERT_EQ(version.major(), expectedVersion.major());
+      ASSERT_EQ(version.minor(), expectedVersion.minor());
+      ASSERT_EQ(version.patch(), expectedVersion.patch());
+      ASSERT_EQ(version.segments(), expectedVersion.segments());
+   }
+}
+
+TEST_F(VersionTest, fromString)
+{
+   int len = m_instanceDataConstructionStrings.size();
+   for (int i = 0; i < len; i++) {
+      const string &constructString = m_instanceDataConstructionStrings.at(i);
+      Version version = Version::fromString(constructString);
+      const Version &expectedVersion = m_instanceDataVersions.at(i);
+      //std::cout << constructString << std::endl;
+      ASSERT_EQ(version, expectedVersion);
+   }
+}
+
+TEST_F(VersionTest, toString)
+{
+   ASSERT_EQ(Version{-1}.toString(), string("-1"));
+   ASSERT_EQ((Version{-1, 0}).toString(), string("-1.0"));
+   ASSERT_EQ((Version{1, -2}).toString(), string("1.-2"));
+}
+
+
+TEST_F(VersionTest, isNull)
+{
+   int len = m_instanceDataVersions.size();
+   for (int i = 0; i < len; i++) {
+      const Version &version = m_instanceDataVersions.at(i);
+      //std::cout << constructString << std::endl;
+      ASSERT_EQ(version.isNull(), m_instanceDataIsNulls.at(i));
    }
 }

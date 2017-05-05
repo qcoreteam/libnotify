@@ -127,23 +127,28 @@ string Version::toString() const
    return version;
 }
 
-Version Version::fromString(const string &string, int *suffixIndex)
+Version Version::fromString(const string &str, int *suffixIndex)
 {
    std::vector<int> segment;
-   std::size_t start = 0;
    std::size_t end = 0;
    std::size_t lastGoodEnd = 0;
-   std::size_t len = string.length();
+   string temp(str);
    do {
       try {
-         n_ulonglong value = std::stoull(string, &end);
-         segment.push_back(int(value));
-         start = end + 1;
-         lastGoodEnd = end;
+         n_longlong value = std::stoll(temp, &end);
+         lastGoodEnd += end;
+         if (value < 0) {
+            break;
+         }
+         segment.push_back(value);
+         if (temp[end] == '.') {
+            end++;
+         }
+         temp = temp.substr(end);
       } catch (...) {
          break;
       }
-   } while (start < len && (end < len && string[end] == '.'));
+   } while (!temp.empty());
    if (suffixIndex) {
       *suffixIndex = lastGoodEnd;
    }
