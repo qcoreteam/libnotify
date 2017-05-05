@@ -31,6 +31,7 @@
 *.app
 
 .gitignore
+CMakeLists.txt.user
 .idea/
 cmake-build-debug/
 *~

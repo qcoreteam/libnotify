@@ -89,7 +89,6 @@ function(notify_add_library name)
                         BINARY_DIR ${NOTIFY_RUNTIME_OUTPUT_INTDIR}
                         LIBRARY_DIR ${NOTIFY_LIBRARY_OUTPUT_INTDIR})
    # $<TARGET_OBJECTS> doesn't require compile flags.
-   notify_add_link_opts(${name})
    if(NOTIFY_ARG_OUTPUT_NAME)
       set_target_properties(${name}
                             PROPERTIES
@@ -132,7 +131,6 @@ macro(notify_add_executable name)
    if(NOT NOTIFY_ARG_NO_INSTALL_RPATH)
       notify_setup_rpath(${name})
    endif()
-   notify_add_link_opts(${name})
    # Do not add -Dname_EXPORTS to the command-line when building files in this
    # target. Doing so is actively harmful for the modules build because it
    # creates extra module variants, and not useful because we don't use these
@@ -170,7 +168,6 @@ function(notify_add_unittest test_suite test_name)
    # executable must be linked with it in order to provide consistent
    # API for all shared libaries loaded by this executable.
    target_link_libraries(${test_name} gtest_main gtest ${PTHREAD_LIB} ${CMAKE_PROJECT_NAME})
-      message("${CMAKE_PROJECT_NAME}")
    add_dependencies(${test_suite} ${test_name})
    get_target_property(test_suite_folder ${test_suite} FOLDER)
    if (NOT ${test_suite_folder} STREQUAL "NOTFOUND")
@@ -208,43 +205,6 @@ function(notify_setup_rpath name)
                          ${_install_name_dir})
 endfunction()
 
-function(notify_add_link_opts target_name)
-   # Don't use linker optimizations in debug builds since it slows down the
-   # linker in a context where the optimizations are not important.
-   if(NOT NOTIFY_BUILD_TYPE STREQUAL "DEBUG")
-      # Pass -O3 to the linker. This enabled different optimizations on different
-      # linkers.
-      if(NOT (${CMALE_SYSTEM_NAME} MATCHES "Darwin|SunOS|AIX"))
-         set_property(TARGET ${target_name} APPEND_STRING PROPERTY
-                      LINK_FLAGS " -Wl,-O3")
-      endif()
-      if(NOTIFY_LINKER_IS_GOLD)
-         # With gold gc-sections is always safe.
-         set_property(TARGET ${target_name} APPEND_STRING PROPERTY
-                      LINK_FLAGS " -Wl,--gc-sections")
-         # Note that there is a bug with -Wl,--icf=safe so it is not safe
-         # to enable. See https://sourceware.org/bugzilla/show_bug.cgi?id=17704.
-      endif()
-      
-      if(NOT NOTIFY_OPT_NO_DEAD_STRIP)
-         if(${CMALE_SYSTEM_NAME} MATCHES "Darwin")
-            # ld64's implementation of -dead_strip breaks tools that use plugins.
-            set_property(TARGET ${target_name} APPEND_STRING PROPERTY
-                         LINK_FLAGS " -Wl,-dead_strip")
-         elseif(${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
-            set_property(TARGET ${target_name} APPEND_STRING PROPERTY
-                         LINK_FLAGS " -Wl,-z -Wl,discard-unused=sections")
-         elseif(NOT WIN32 AND NOT NOTIFY_LINKER_IS_GOLD)
-            # Object files are compiled with -ffunction-data-sections.
-            # Versions of bfd ld < 2.23.1 have a bug in --gc-sections that breaks
-            # tools that use plugins. Always pass --gc-sections once we require
-            # a newer linker.
-            set_property(TARGET ${target_name} APPEND_STRING PROPERTY
-                         LINK_FLAGS " -Wl,--gc-sections")
-         endif()
-      endif()
-   endif()
-endfunction()
 
 # Set each output directory according to ${CMAKE_CONFIGURATION_TYPES}.
 # Note: Don't set variables CMAKE_*_OUTPUT_DIRECTORY any more,

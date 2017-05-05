@@ -163,4 +163,4 @@ void Version::SegmentStorage::setVector(int len, int major, int minor, int patch
    }
 }
 
-}; // notify
+} // notify

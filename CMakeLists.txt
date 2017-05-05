@@ -373,7 +373,10 @@ if(NOT NOTIFY_OPT_DISABLE_TESTS)
    add_subdirectory(unittests)
 endif()
 
+set(NOTIFY_HEADERS)
+set(NOTIFY_PRIVATE_HEADERS)
 add_subdirectory(cmake/modules)
+add_subdirectory(include)
 add_subdirectory(src)
 
 # We run all tests with the different backends turned on one at a time.

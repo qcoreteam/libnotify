@@ -1,0 +1,22 @@
+set(NOTIFY_HEADERS
+   ${NOTIFY_INCLUDE_DIR}/notify/kernel/Global.h
+   ${NOTIFY_INCLUDE_DIR}/notify/kernel/CompilerDetection.h
+   ${NOTIFY_INCLUDE_DIR}/notify/kernel/EventDispatcher.h
+   ${NOTIFY_INCLUDE_DIR}/notify/kernel/Flags.h
+   ${NOTIFY_INCLUDE_DIR}/notify/kernel/ProcessorDetection.h
+   ${NOTIFY_INCLUDE_DIR}/notify/kernel/SystemDetection.h
+   ${NOTIFY_INCLUDE_DIR}/notify/utils/Version.h
+   ${NOTIFY_INCLUDE_DIR}/notify/utils/CommandLineParser.h
+   ${NOTIFY_INCLUDE_DIR}/notify/utils/CommandLineOption.h
+   ${NOTIFY_INCLUDE_DIR}/notify/socket/AbstractSocket.h
+   ${NOTIFY_INCLUDE_DIR}/notify/socket/LocalSocket.h
+   ${NOTIFY_INCLUDE_DIR}/notify/socket/SctpSocket.h
+   ${NOTIFY_INCLUDE_DIR}/notify/socket/TcpSocket.h
+   ${NOTIFY_INCLUDE_DIR}/notify/eventmgr/AbstractEventHandler.h
+   ${NOTIFY_INCLUDE_DIR}/notify/eventmgr/EventMgr.h
+   ${NOTIFY_INCLUDE_DIR}/notify/eventmgr/FileSystemEventHandler.h
+   ${NOTIFY_INCLUDE_DIR}/notify/eventmgr/SocketEventHandler.h
+   ${NOTIFY_INCLUDE_DIR}/notify/EventLoop.h
+   ${NOTIFY_EXTRA_INCLUDE_DIR}/notify/kernel/Config.h
+   ${NOTIFY_EXTRA_INCLUDE_DIR}/notify/kernel/PrivateConfig.h
+   PARENT_SCOPE)

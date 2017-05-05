@@ -8,4 +8,5 @@
 #include <iostream>
 TEST(EventMgrTest, AddListener) {
    std::cout << "fuck google test" << std::endl;
+   std::cout << "" << std::endl;
 }

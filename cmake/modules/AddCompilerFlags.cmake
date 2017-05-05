@@ -9,3 +9,4 @@ macro(notify_add_compiler_flags)
       endif()
    endforeach()
 endmacro()
+

@@ -35,7 +35,7 @@ class Version
                                                        0 : sizeof(void*) - 1;
    static NOTIFY_DECL_CONSTEXPR n_uint8 InlineSegmentStartIdx = !InlineSegmentMarker ? 1 : 0;
    static NOTIFY_DECL_CONSTEXPR n_uint8 InlineSegmentCount = sizeof(void*) - 1;
-   NOTIFY_STATIC_ASSERT(InlineSegmentCount >= 3);
+   NOTIFY_STATIC_ASSERT(InlineSegmentCount >= 3)
 
    struct SegmentStorage
    {
@@ -327,6 +327,6 @@ NOTIFY_REQUIRE_RESULT inline bool operator!=(const Version &left, const Version 
    return notify::Version::compare(left, right) != 0;
 }
 
-};
+}
 
 #endif //NOTIFY_UTILS_VERSION_H

@@ -72,7 +72,7 @@ template <typename T>
 static inline T *notify_get_ptr_helper(T *ptr)
 {
    return ptr;
-};
+}
 
 template <typename T>
 static inline typename T::pointer notify_get_ptr_helper(const T &p)
@@ -81,26 +81,26 @@ static inline typename T::pointer notify_get_ptr_helper(const T &p)
 }
 
 #define NOTIFY_DECLARE_PRIVATE(Class)\
-inline Class##Private* getImplPtr()\
+   inline Class##Private* getImplPtr()\
 {\
    return reinterpret_cast<Class##Private *>(notify_get_ptr_helper(implPtr))\
-}\
-inline const Class##Private* getImplPtr() const\
+   }\
+   inline const Class##Private* getImplPtr() const\
 {\
    return reinterpret_cast<const Class##Provate *>(notify_get_ptr_helper(implPtr))\
-}\
-friend class Class##Private;
+   }\
+   friend class Class##Private;
 
 #define NOTIFY_DECLARE_PUBLIC(Class)\
-inline Class* getApiPtr()\
+   inline Class* getApiPtr()\
 {\
    return static_cast<Class *>(apiPtr);\
-}\
-inline const Class* getApiPtr() const\
+   }\
+   inline const Class* getApiPtr() const\
 {\
    return static_const<const Class *>(apiPtr);\
-}\
-friend class Class;
+   }\
+   friend class Class;
 
 #define NOTIFY_D(Class) Class##Private * const implPtr = getImplPtr()
 #define NOTIFY_Q(Class) Class * const apiPtr = getApiPtr()
@@ -117,10 +117,10 @@ template <> class NStaticAssertFailure<true> {};
 #  define NOTIFY_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B) A ## B
 #  ifdef __COUNTER__
 #     define NOTIFY_STATIC_ASSERT(condition) \
-enum {NOTIFY_STATIC_ASSERT_PRIVATE_JOIN(n_static_assert_result, __COUNTER__) = sizeof(NStaticAssertFailure<!!(condition)>)};
+   enum {NOTIFY_STATIC_ASSERT_PRIVATE_JOIN(n_static_assert_result, __COUNTER__) = sizeof(NStaticAssertFailure<!!(condition)>)};
 #  else
 #     define NOTIFY_STATIC_ASSERT(condition) \
-enum {NOTIFY_STATIC_ASSERT_PRIVATE_JOIN(n_static_assert_result, __LINE__) = sizeof(NStaticAssertFailure<!!(condition)>)};
+   enum {NOTIFY_STATIC_ASSERT_PRIVATE_JOIN(n_static_assert_result, __LINE__) = sizeof(NStaticAssertFailure<!!(condition)>)};
 #  endif // __COUNTER__
 #  define NOTIFY_STATIC_ASSERT_X(condition, message) NOTIFY_STATIC_ASSERT(condition)
 #endif
@@ -159,7 +159,7 @@ void check_swap(T &t) NOTIFY_DECL_NOEXCEPT_EXPR(noexcept(swap(t, t)));
 
 template <typename T>
 inline void swap(T &left, T &right)
-   NOTIFY_DECL_NOEXCEPT_EXPR(noexcept(internal::swapexceptiontester::check_swap(left)))
+NOTIFY_DECL_NOEXCEPT_EXPR(noexcept(internal::swapexceptiontester::check_swap(left)))
 {
    using std::swap;
    swap(left, right);

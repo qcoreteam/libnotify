@@ -618,8 +618,8 @@
 // Variadic macros are supported for gnu++98, c++11, c99 ... since 2.9
 #  if NOTIFY_CC_CLANG >= 209
 #     if !defined(__STRICT_ANSI__) || defined(__GXX_EXPERIMENTAL_CXX0X__) \
-         || (defined(__cplusplus) && (__cplusplus >= 201103L)) \
-         || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
+   || (defined(__cplusplus) && (__cplusplus >= 201103L)) \
+   || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
 #        define NOTIFY_COMPILER_VARIADIC_MACROS
 #     endif
 #  endif
@@ -762,9 +762,9 @@
 #     define NOTIFY_COMPILER_BINARY_LITERALS
 #  endif
 #  if !defined(__STRICT_ANSI__) || defined(__GXX_EXPERIMENTAL_CXX0X__) \
-      || (defined(__cplusplus) && (__cplusplus >= 201103L)) \
-      || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
-      // Variadic macros are supported for gnu++98, c++11, C99 ... since forever (gcc 2.97)
+   || (defined(__cplusplus) && (__cplusplus >= 201103L)) \
+   || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
+// Variadic macros are supported for gnu++98, c++11, C99 ... since forever (gcc 2.97)
 #     define NOTIFY_COMPILER_VARIADIC_MACROS
 #  endif
 #  if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L
@@ -969,7 +969,7 @@
 #     endif // !__GLIBCXX__ && !_LIBCPP_VERSION
 #  endif // NOTIFY_OS_QNX
 #  if (defined(NOTIFY_CC_CLANG) || defined(NOTIFY_CC_INTEL)) && defined(NOTIFY_OS_MAC) && defined(__GNUC_LIBSTD__) \
-&& ((__GNUC_LIBSTD__-0) * 100 + __GNUC_LIBSTD_MINOR__-0 <= 402)
+   && ((__GNUC_LIBSTD__-0) * 100 + __GNUC_LIBSTD_MINOR__-0 <= 402)
 // Apple has not updated libstdc++ since 2007, which means it does not have
 // <initializer_list> or std::move. Let's disable these features
 #     undef NOTIFY_COMPILER_INITIALIZER_LISTS
