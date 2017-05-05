@@ -35,7 +35,7 @@ class Version
                                                        0 : sizeof(void*) - 1;
    static NOTIFY_DECL_CONSTEXPR n_uint8 InlineSegmentStartIdx = !InlineSegmentMarker ? 1 : 0;
    static NOTIFY_DECL_CONSTEXPR n_uint8 InlineSegmentCount = sizeof(void*) - 1;
-   NOTIFY_STATIC_ASSERT(InlineSegmentCount >= 3)
+   NOTIFY_STATIC_ASSERT(InlineSegmentCount >= 3);
 
    struct SegmentStorage
    {
@@ -64,7 +64,7 @@ class Version
       SegmentStorage(const SegmentStorage &other)
       {
          if (other.isUsingPointer()) {
-            pointerSegments = other.pointerSegments;
+            pointerSegments = new vector<int>(*other.pointerSegments);
          } else {
             dummy = other.dummy;
          }
