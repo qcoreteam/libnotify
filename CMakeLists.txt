@@ -4,7 +4,7 @@ project(notify CXX)
 
 # Add path for custom CMake modules
 list(APPEND CMAKE_MODULE_PATH
-     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 
 include(AddCompilerFlags)
 include(AddLibNotify)
@@ -24,23 +24,23 @@ set(NOTIFY_ABI_MINOR ${NOTIFY_VERSION_MINOR})
 set(NOTIFY_ABI_PATCH ${NOTIFY_VERSION_PATCH})
 
 set(NOTIFY_ABI_VERSION
-    "${NOTIFY_ABI_MAJOR}.${NOTIFY_ABI_MINOR}.${NOTIFY_ABI_PATCH}")
+        "${NOTIFY_ABI_MAJOR}.${NOTIFY_ABI_MINOR}.${NOTIFY_ABI_PATCH}")
 set(NOTIFY_PACKAGE_VERSION
-    "${NOTIFY_VERSION_MAJOR}.${NOTIFY_VERSION_MINOR}.${NOTIFY_VERSION_PATCH}")
+        "${NOTIFY_VERSION_MAJOR}.${NOTIFY_VERSION_MINOR}.${NOTIFY_VERSION_PATCH}")
 set(NOTIFY_NUMERIC_VERSION 0x00000101)
 set(NOTIFY_STAGE_NAME ${NOTIFY_VERSION_STAGE})
 
 set(NOTIFY_ALLOWED_STAGE_NAMES
-    rc
-    beta
-    alpha
-    alpha-devel
-    release
-    stable)
+        rc
+        beta
+        alpha
+        alpha-devel
+        release
+        stable)
 
 list(FIND NOTIFY_ALLOWED_STAGE_NAMES
-     "${NOTIFY_STAGE_NAME}"
-     NOTIFY_TEMP_STAGE_RET)
+        "${NOTIFY_STAGE_NAME}"
+        NOTIFY_TEMP_STAGE_RET)
 
 if(NOTIFY_TEMP_STAGE_RET EQUAL -1)
    message(WARNING
@@ -49,7 +49,7 @@ if(NOTIFY_TEMP_STAGE_RET EQUAL -1)
 endif()
 
 set(NOTIFY_VERSION
-    "${NOTIFY_VERSION_MAJOR}.${NOTIFY_VERSION_MINOR}.${NOTIFY_VERSION_PATCH}-${NOTIFY_STAGE_NAME}")
+        "${NOTIFY_VERSION_MAJOR}.${NOTIFY_VERSION_MINOR}.${NOTIFY_VERSION_PATCH}-${NOTIFY_STAGE_NAME}")
 
 # Set some important variables
 set(NOTIFY_WORKSPACE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -66,19 +66,19 @@ set(NOTIFY_ARCHIVE_OUTPUT_INTDIR "${NOTIFY_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 option(NOTIFY_OPT_ENABLE_VERBOSE_DEBUG
-       "Enable verbose debugging" OFF)
+        "Enable verbose debugging" OFF)
 
 option(NOTIFY_OPT_DISABLE_TESTS
-       "If tests should be compiled or not" OFF)
+        "If tests should be compiled or not" OFF)
 
 option(NOTIFY_OPT_ENABLE_COVERAGE
-       "Enable running gcov to get a test coverage report (only works with GCC or Clang)
+        "Enable running gcov to get a test coverage report (only works with GCC or Clang)
 Make sure to enable -DCMAKE_BUILD_TYPE=Debug as well"
-       OFF)
+        OFF)
 
 option(NOTIFY_OPT_DISABLE_CLOCK_GETTIME
-       "Do not use clock_gettime event if it is available"
-       OFF)
+        "Do not use clock_gettime event if it is available"
+        OFF)
 
 option(NOTIFY_OPT_ENABLE_THREADS "Use threads if available." ON)
 
@@ -87,7 +87,7 @@ option(NOTIFY_OPT_DISABLE_EXCEPTION "Disable Exception handling" OFF)
 option(NOTIFY_OPT_DISABLE_RTTI "Disable runtime type information" OFF)
 
 option(NOTIFY_OPT_FORCE_KQUEUE_CHECK
-       "When crosscompiling forces running a test program that verifies that Kqueue works with pipes. Note that this requires you to manually run the test program on the the cross compilation target to verify that it works. See cmake documentation for try_run for more details" OFF)
+        "When crosscompiling forces running a test program that verifies that Kqueue works with pipes. Note that this requires you to manually run the test program on the the cross compilation target to verify that it works. See cmake documentation for try_run for more details" OFF)
 
 if(NOTIFY_OPT_DISABLE_EXCEPTION AND NOT NOTIFY_OPT_DISABLE_RTTI)
    message(FATAL_ERROR "Exception handling requires RTTI. You must set NOTIFY_OPT_DISABLE_EXCEPTION to OFF")
@@ -114,37 +114,37 @@ endif()
 # GCC specific options.
 if(CMAKE_COMPILER_IS_GNUCXX)
    option(NOTIFY_OPT_DISABLE_GCC_WARNINGS "Disable verbose warnings with GCC"
-          OFF)
+           OFF)
    option(NOTIFY_OPT_ENABLE_GCC_HARDENING "Enable compiler security checks"
-          OFF)
+           OFF)
    option(NOTIFY_OPT_ENABLE_GCC_FUNCTION_SECTIONS "Enable gcc function sections"
-          OFF)
+           OFF)
    option(NOTIFY_OPT_ENABLE_GCC_WARNINGS "Make all GCC warnings inti errors"
-          OFF)
-   
+           OFF)
+
    list(APPEND NOTIFY_TEMP_FLAGS -Wall -Wswitch)
    if(NOTIFY_OPT_DISABLE_GCC_WARNINGS)
       list(APPEND NOTIFY_TEMP_FLAGS -w)
    endif()
-   
+
    if(NOTIFY_OPT_ENABLE_GCC_HARDENING)
       list(APPEND NOTIFY_TEMP_FLAGS
-           -fstack-protector-all
-           -fwrapv
-           -fPIE
-           -Wstack-protector
-           "--param ssp-buffer-size=1")
+              -fstack-protector-all
+              -fwrapv
+              -fPIE
+              -Wstack-protector
+              "--param ssp-buffer-size=1")
       add_definitions(-DNOTIFY_FORTIFY_SOURCE=2)
    endif()
-   
+
    if(NOTIFY_OPT_ENABLE_GCC_FUNCTION_SECTIONS)
       list(APPEND NOTIFY_TEMP_FLAGS -ffunction-sections)
    endif()
-   
+
    if(NOTIFY_OPT_ENABLE_GCC_WARNINGS)
       list(APPEND NOTIFY_TEMP_FLAGS -Werror)
    endif()
-   
+
    # We need to test for at least gcc 2.95 here, because older versions don't
    # have -fno-strict-aliasing
    list(APPEND NOTIFY_TEMP_FLAGS -fno-strict-aliasing)
@@ -154,8 +154,8 @@ endif()
 # Get rid of deprecated warnings for OpenSSL on OSX 10.7 and greater.
 if(APPLE)
    notify_add_compiler_flags(
-       -Wno-error=deprecated-declarations
-       -Qunused-arguments
+           -Wno-error=deprecated-declarations
+           -Qunused-arguments
    )
 endif()
 
@@ -322,6 +322,14 @@ check_function_exists(umask NOTIFY_HAVE_UMASK)
 check_function_exists(unsetenv NOTIFY_HAVE_UNSETENV)
 check_function_exists(gethostbyname_r NOTIFY_HAVE_GETHOSTBYNAME_R)
 
+if(NOTIFY_HAVE_PORT_H AND NOTIFY_HAVE_PORT_CREATE)
+   set(NOTIFY_HAVE_EVENT_PORTS 1)
+endif()
+
+if(NOT WIN32)
+   check_function_exists(select NOTIFY_HAVE_SELECT)
+endif()
+
 # check symbol
 check_symbol_exists(_POSIX_1_SOURCE "stdio.h" NOTIFY_POSIX_1_SOURCE)
 check_symbol_exists(_POSIX_SOURCE "stdio.h" NOTIFY_POSIX_SOURCE)
@@ -339,9 +347,9 @@ endif()
 
 if(NOT APPLE)
    execute_process(
-       COMMAND ${CMAKE_C_COMPILER} -Wl,--version
-       OUTPUT_VARIABLE stdout
-       ERROR_QUIET
+           COMMAND ${CMAKE_C_COMPILER} -Wl,--version
+           OUTPUT_VARIABLE stdout
+           ERROR_QUIET
    )
    if("${stdout}" MATCHES "GNU gold")
       set(NOTIFY_LINKER_IS_GOLD ON)
@@ -349,14 +357,14 @@ if(NOT APPLE)
 endif()
 
 configure_file(
-    ${NOTIFY_INCLUDE_DIR}/notify/kernel/PrivateConfig.h.in
-    ${NOTIFY_EXTRA_INCLUDE_DIR}/notify/kernel/PrivateConfig.h
-    NEWLINE_STYLE UNIX)
+        ${NOTIFY_INCLUDE_DIR}/notify/kernel/PrivateConfig.h.in
+        ${NOTIFY_EXTRA_INCLUDE_DIR}/notify/kernel/PrivateConfig.h
+        NEWLINE_STYLE UNIX)
 
 configure_file(
-    ${NOTIFY_INCLUDE_DIR}/notify/kernel/Config.h.in
-    ${NOTIFY_EXTRA_INCLUDE_DIR}/notify/kernel/Config.h
-    NEWLINE_STYLE UNIX)
+        ${NOTIFY_INCLUDE_DIR}/notify/kernel/Config.h.in
+        ${NOTIFY_EXTRA_INCLUDE_DIR}/notify/kernel/Config.h
+        NEWLINE_STYLE UNIX)
 
 # generate config header
 
@@ -364,8 +372,8 @@ configure_file(
 set(NOTIFY_PLUGIN_EXT ${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 include_directories(BEFORE
-                    ${NOTIFY_INCLUDE_DIR}
-                    ${NOTIFY_EXTRA_INCLUDE_DIR})
+        ${NOTIFY_INCLUDE_DIR}
+        ${NOTIFY_EXTRA_INCLUDE_DIR})
 
 if(NOT NOTIFY_OPT_DISABLE_TESTS)
    add_subdirectory(utils/unittest)
@@ -382,6 +390,22 @@ add_subdirectory(src)
 # We run all tests with the different backends turned on one at a time.
 
 set(NOTIFY_BACKENDS "")
+
+if(NOTIFY_HAVE_EPOLL)
+   list(APPEND NOTIFY_BACKENDS EPOLL)
+endif()
+
+if(NOTIFY_HAVE_SELECT)
+   list(APPEND NOTIFY_BACKENDS SELECT)
+endif()
+
+if(NOTIFY_HAVE_POLL)
+   list(APPEND NOTIFY_BACKENDS POLL)
+endif()
+
+if(NOTIFY_HAVE_EVENT_PORTS)
+   list(APPEND NOTIFY_BACKENDS EVPORT)
+endif()
 
 if(NOTIFY_HAVE_KQUEUE)
    list(APPEND NOTIFY_BACKENDS KQUEUE)
