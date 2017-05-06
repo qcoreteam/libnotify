@@ -39,26 +39,26 @@ struct IsSignedEnum
 NOTIFY_STATIC_ASSERT((IsUnsignedEnum<n_uint8>::value));
 NOTIFY_STATIC_ASSERT((!IsUnsignedEnum<n_int8>::value));
 
-NOTIFY_STATIC_ASSERT((IsSignedEnum<n_uint8>::value));
-NOTIFY_STATIC_ASSERT((!IsSignedEnum<n_int8>::value));
+NOTIFY_STATIC_ASSERT((!IsSignedEnum<n_uint8>::value));
+NOTIFY_STATIC_ASSERT((IsSignedEnum<n_int8>::value));
 
 NOTIFY_STATIC_ASSERT((IsUnsignedEnum<n_uint16>::value));
 NOTIFY_STATIC_ASSERT((!IsUnsignedEnum<n_int16>::value));
 
-NOTIFY_STATIC_ASSERT((IsSignedEnum<n_uint16>::value));
-NOTIFY_STATIC_ASSERT((!IsSignedEnum<n_int16>::value));
+NOTIFY_STATIC_ASSERT((!IsSignedEnum<n_uint16>::value));
+NOTIFY_STATIC_ASSERT((IsSignedEnum<n_int16>::value));
 
 NOTIFY_STATIC_ASSERT((IsUnsignedEnum<n_uint32>::value));
 NOTIFY_STATIC_ASSERT((!IsUnsignedEnum<n_int32>::value));
 
-NOTIFY_STATIC_ASSERT((IsSignedEnum<n_uint32>::value));
-NOTIFY_STATIC_ASSERT((!IsSignedEnum<n_int32>::value));
+NOTIFY_STATIC_ASSERT((!IsSignedEnum<n_uint32>::value));
+NOTIFY_STATIC_ASSERT((IsSignedEnum<n_int32>::value));
 
 NOTIFY_STATIC_ASSERT((IsUnsignedEnum<n_uint64>::value));
 NOTIFY_STATIC_ASSERT((!IsUnsignedEnum<n_int64>::value));
 
-NOTIFY_STATIC_ASSERT((IsSignedEnum<n_uint64>::value));
-NOTIFY_STATIC_ASSERT((!IsSignedEnum<n_int64>::value));
+NOTIFY_STATIC_ASSERT((!IsSignedEnum<n_uint64>::value));
+NOTIFY_STATIC_ASSERT((IsSignedEnum<n_int64>::value));
 
 } // internal
 } // notify

@@ -165,4 +165,15 @@ NOTIFY_DECL_NOEXCEPT_EXPR(noexcept(internal::swapexceptiontester::check_swap(lef
    swap(left, right);
 }
 
+namespace notify
+{
+
+class Version;
+class string;
+const Version &get_version();
+const string &get_version_str();
+const uint get_version_number();
+
+}
+
 #endif //NOTIFY_KERNEL_GLOBAL_H
