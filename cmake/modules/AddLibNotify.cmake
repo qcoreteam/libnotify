@@ -22,10 +22,10 @@
 #   )
 function(notify_add_library name)
    cmake_parse_arguments(NOTIFY_ARG
-                         "MODULE;SHARED;STATIC;OBJECT;SONAME"
-                         "OUTPUT_NAME"
-                         "ADDITIONAL_HEADERS;DEPENDS;LINK_COMPONENTS;LINK_LIBS;OBJLIBS"
-                         ${ARGN})
+           "MODULE;SHARED;STATIC;OBJECT;SONAME"
+           "OUTPUT_NAME"
+           "ADDITIONAL_HEADERS;DEPENDS;LINK_COMPONENTS;LINK_LIBS;OBJLIBS"
+           ${ARGN})
    list(APPEND NOTIFY_COMMON_DEPENDS ${NOTIFY_ARG_DEPENDS})
    if(NOTIFY_ARG_ADDITIONAL_HEADERS)
       # Pass through ADDITIONAL_HEADERS.
@@ -36,7 +36,7 @@ function(notify_add_library name)
    else()
       list(APPEND ALL_FILES ${NOTIFY_ARG_UNPARSED_ARGUMENTS} ${NOTIFY_ARG_ADDITIONAL_HEADERS})
    endif()
-   
+
    if(NOTIFY_ARG_MODULE)
       if(NOTIFY_ARG_SHARED OR NOTIFY_ARG_STATIC)
          message(WARNING "MODULE with SHARED|STATIC doesn't make sense.")
@@ -54,7 +54,7 @@ function(notify_add_library name)
       # Generate an obj library for both targets.
       set(obj_name "obj.${name}")
       add_library(${obj_name} OBJECT EXCLUDE_FROM_ALL
-                  ${ALL_FILES})
+              ${ALL_FILES})
       set(ALL_FILES "$<TARGET_OBJECTS:${obj_name}>")
       # Do add_dependencies(obj) later due to CMake issue 14747.
       set_target_properties(${obj_name} PROPERTIES FOLDER "Object Libraries")
@@ -68,14 +68,14 @@ function(notify_add_library name)
       endif()
       # DEPENDS has been appended to NOTIFY_COMMON_LIBS.
       notify_add_library(${name_static} STATIC
-                         ${output_name}
-                         OBJLIBS ${ALL_FILES} # objlib
-                         LINK_LIBS ${NOTIFY_ARG_LINK_LIBS}
-                         LINK_COMPONENTS ${NOTIFY_ARG_LINK_COMPONENTS})
+              ${output_name}
+              OBJLIBS ${ALL_FILES} # objlib
+              LINK_LIBS ${NOTIFY_ARG_LINK_LIBS}
+              LINK_COMPONENTS ${NOTIFY_ARG_LINK_COMPONENTS})
       # FIXME: Add name_static to anywhere in TARGET ${name}'s PROPERTY.
       set(NOTIFY_ARG_STATIC)
    endif()
-   
+
    if(NOTIFY_ARG_MODULE)
       add_library(${name} MODULE ${ALL_FILES})
       notify_setup_rpath(${name})
@@ -86,42 +86,42 @@ function(notify_add_library name)
       add_library(${name} STATIC ${ALL_FILES})
    endif()
    set_output_directory(${name}
-                        BINARY_DIR ${NOTIFY_RUNTIME_OUTPUT_INTDIR}
-                        LIBRARY_DIR ${NOTIFY_LIBRARY_OUTPUT_INTDIR})
+           BINARY_DIR ${NOTIFY_RUNTIME_OUTPUT_INTDIR}
+           LIBRARY_DIR ${NOTIFY_LIBRARY_OUTPUT_INTDIR})
    # $<TARGET_OBJECTS> doesn't require compile flags.
    if(NOTIFY_ARG_OUTPUT_NAME)
       set_target_properties(${name}
-                            PROPERTIES
-                            OUTPUT_NAME ${NOTIFY_ARG_OUTPUT_NAME})
+              PROPERTIES
+              OUTPUT_NAME ${NOTIFY_ARG_OUTPUT_NAME})
    endif()
-   
+
    if(NOTIFY_ARG_MODULE)
       set_target_properties(${name}
-                            PROPERTIES
-                            PREFIX ""
-                            SUFFIX ${NOTIFY_PLUGIN_EXT})
+              PROPERTIES
+              PREFIX ""
+              SUFFIX ${NOTIFY_PLUGIN_EXT})
    endif()
-   
+
    if(NOTIFY_ARG_SHARED)
       if(WIN32)
          set_target_properties(${name} PROPERTIES
-                               PREFIX "")
-         # Set SOVERSION on shared libraries that lack explicit SONAME
-         # specifier, on *nix systems that are not Darwin.
-         if(UNIX AND NOT APPLE AND NOT NOTIFY_ARG_SONAME)
-            set_target_properties(${name}
-                                  PROPERTIES
-                                  # Since 1.0.0, the ABI version is indicated by the major version
-                                  SOVERSION ${NOTIFY_VERSION_MAJOR}
-                                  VERSION ${NOTIFY_VERSION_MAJOR}.${NOTIFY_VERSION_MINOR}.${NOTIFY_VERSION_PATCH}${NOTIFY_VERSION_STAGE})
-         endif()
+                 PREFIX "")
+      endif()
+      # Set SOVERSION on shared libraries that lack explicit SONAME
+      # specifier, on *nix systems that are not Darwin.
+      if(UNIX AND NOT APPLE AND NOT NOTIFY_ARG_SONAME)
+         set_target_properties(${name}
+                 PROPERTIES
+                 # Since 1.0.0, the ABI version is indicated by the major version
+                 SOVERSION ${NOTIFY_VERSION_MAJOR}
+                 VERSION ${NOTIFY_VERSION_MAJOR}.${NOTIFY_VERSION_MINOR}.${NOTIFY_VERSION_PATCH})
       endif()
    endif()
 endfunction()
 
 macro(notify_add_executable name)
    cmake_parse_arguments(NOTIFY_ARG "NO_INSTALL_RPATH" ""
-                         "DEPENDS" ${ARGN})
+           "DEPENDS" ${ARGN})
    set(ALL_FILES ${NOTIFY_ARG_UNPARSED_ARGUMENTS})
    if(EXCLUDE_FROM_ALL)
       add_executable(${name} EXCLUDE_FROM_ALL ${ALL_FILES})
@@ -138,8 +138,8 @@ macro(notify_add_executable name)
    set_target_properties( ${name} PROPERTIES DEFINE_SYMBOL "" )
    set(EXCLUDE_FROM_ALL OFF)
    set_output_directory(${name}
-                        BINARY_DIR ${NOTIFY_RUNTIME_OUTPUT_INTDIR}
-                        LIBRARY_DIR ${NOTIFY_LIBRARY_OUTPUT_INTDIR})
+           BINARY_DIR ${NOTIFY_RUNTIME_OUTPUT_INTDIR}
+           LIBRARY_DIR ${NOTIFY_LIBRARY_OUTPUT_INTDIR})
 
    if(NOTIFY_COMMON_DEPENDS)
       add_dependencies(${name} ${NOTIFY_COMMON_DEPENDS})
@@ -191,18 +191,18 @@ function(notify_setup_rpath name)
       set(_install_rpath "\$ORIGIN/../lib${NOTIFY_OPT_LIBDIR_SUFFIX}" ${extra_libdir})
       if(${CMAKE_SYSTEM_NAME} MATCHES "(FreeBSD|DragonFly)")
          set_property(TARGET ${name} APPEND_STRING PROPERTY
-                      LINK_FLAGS " -Wl,-z,origin ")
+                 LINK_FLAGS " -Wl,-z,origin ")
       elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
          set_property(TARGET ${name} APPEND_STRING PROPERTY
-                      LINK_FLAGS " -Wl,-rpath-link,${NOTIFY_LIBRARY_OUTPUT_INTDIR} ")
+                 LINK_FLAGS " -Wl,-rpath-link,${NOTIFY_LIBRARY_OUTPUT_INTDIR} ")
       endif()
    else()
       return()
    endif()
    set_target_properties(${name} PROPERTIES
-                         BUILD_WITH_INSTALL_RPATH ON
-                         INSTALL_RPATH "${_install_rpath}"
-                         ${_install_name_dir})
+           BUILD_WITH_INSTALL_RPATH ON
+           INSTALL_RPATH "${_install_rpath}"
+           ${_install_name_dir})
 endfunction()
 
 
@@ -211,7 +211,7 @@ endfunction()
 # or a certain builder, for eaxample, msbuild.exe, would be confused.
 function(set_output_directory target)
    cmake_parse_arguments(NOTIFY_ARG "" "BINARY_DIR;LIBRARY_DIR" "" ${ARGN})
-   
+
    # module_dir -- corresponding to LIBRARY_OUTPUT_DIRECTORY.
    # It affects output of add_library(MODULE).
    if(WIN32 OR CYGWIN)
@@ -262,6 +262,6 @@ function(notify_update_compile_flags name)
          set(NOTIFY_REQUIRES_RTTI ON)
       endif()
    else()
-   
+
    endif()
 endfunction()

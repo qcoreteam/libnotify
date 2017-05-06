@@ -3,4 +3,4 @@ set(NOTIFY_SRC
     eventmgr/EventMgr.cpp
     utils/Version.cpp)
 
-add_library(${CMAKE_PROJECT_NAME} SHARED ${NOTIFY_SRC} ${NOTIFY_HEADERS})
+notify_add_library(${CMAKE_PROJECT_NAME} SHARED ${NOTIFY_SRC} ${NOTIFY_HEADERS})

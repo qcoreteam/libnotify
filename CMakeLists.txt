@@ -177,7 +177,7 @@ if(NOT NOTIFY_GNU_SOURCE)
    endif()
 endif()
 
-if(NOT NOTIFY_GNU_SOURCE)
+if(NOTIFY_GNU_SOURCE)
    add_definitions(-DNOTIFY_GNU_SOURCE)
 endif()
 
