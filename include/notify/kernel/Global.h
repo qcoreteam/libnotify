@@ -165,5 +165,4 @@ NOTIFY_DECL_NOEXCEPT_EXPR(noexcept(internal::swapexceptiontester::check_swap(lef
    swap(left, right);
 }
 
-
 #endif //NOTIFY_KERNEL_GLOBAL_H

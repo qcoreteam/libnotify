@@ -66,8 +66,10 @@ public:
    >::type;
 #endif
    using EnumType = Enum;
+   NOTIFY_DECL_CONSTEXPR inline Flags() NOTIFY_DECL_NOEXCEPT : m_data(0) {}
    NOTIFY_DECL_CONSTEXPR inline Flags(Enum flag) NOTIFY_DECL_NOEXCEPT : m_data(Int(flag)) {}
    NOTIFY_DECL_CONSTEXPR inline Flags(Flag flag) NOTIFY_DECL_NOEXCEPT : m_data(flag) {}
+   NOTIFY_DECL_CONSTEXPR inline Flags(Int flag) NOTIFY_DECL_NOEXCEPT : m_data(flag) {}
 
 #ifdef NOTIFY_COMPILER_INITIALIZER_LISTS
    NOTIFY_DECL_CONSTEXPR inline Flags(std::initializer_list<Enum> flags) NOTIFY_DECL_NOEXCEPT
@@ -192,17 +194,17 @@ private:
 
 };
 
-#define NOTIFY_DECLARE_FLAGS(Flags, Enum) \
-   using Flags = Flags<Enum>;
+#define NOTIFY_DECLARE_FLAGS(FlagsType, Enum) \
+   using FlagsType = notify::Flags<Enum>;
 
-#define NOTIFY_DECLARE_OPERATORS_FOR_FLAGS(Flags) \
-NOTIFY_DECL_CONSTEXPR inline Flags<Flags::EnumType> \
-   operator|(Flags::EnumType flag1, Flags::EnumType flag2) NOTIFY_DECL_NOEXCEPT \
+#define NOTIFY_DECLARE_OPERATORS_FOR_FLAGS(FlagsType) \
+NOTIFY_DECL_CONSTEXPR inline notify::Flags<FlagsType::EnumType> \
+   operator|(FlagsType::EnumType flag1, FlagsType::EnumType flag2) NOTIFY_DECL_NOEXCEPT \
 {\
-   return Flags<Flags::EnumType>(flag1) | flag2;\
+   return notify::Flags<FlagsType::EnumType>(flag1) | flag2;\
 }\
-NOTIFY_DECL_CONSTEXPR inline Flags<Flags::EnumType> \
-   operator|(Flags::EnumType flag1, Flags<Flags::EnumType> flags2) NOTIFY_DECL_NOEXCEPT \
+NOTIFY_DECL_CONSTEXPR inline notify::Flags<FlagsType::EnumType> \
+   operator|(FlagsType::EnumType flag1, notify::Flags<FlagsType::EnumType> flag2) NOTIFY_DECL_NOEXCEPT \
 {\
    return flag2 | flag1; \
 }
