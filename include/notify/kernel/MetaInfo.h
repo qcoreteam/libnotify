@@ -12,35 +12,21 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Created by softboy on 5/6/17.
+//
 
+#ifndef NOTIFY_KERNEL_METAINFO_H
+#define NOTIFY_KERNEL_METAINFO_H
 
-#include "notify/kernel/Global.h"
-#include "notify/utils/Version.h"
-#include "notify/kernel/MetaInfo.h"
-#include <string>
+class string;
 
 namespace notify
 {
 
-using std::string;
+class Version;
+const Version &get_version();
+const string &get_version_str();
+const uint get_version_number();
 
-const Version &get_version()
-{
-   static Version version(NOTIFY_VERSION_MAJOR,
-                          NOTIFY_VERSION_MINOR,
-                          NOTIFY_VERSION_PATCH);
-   return version;
 }
 
-const uint get_version_number()
-{
-   return NOTIFY_NUMERIC_VERSION;
-}
-
-const string &get_version_str()
-{
-   static string version(NOTIFY_VERSION);
-   return version;
-}
-
-} // notify
+#endif //NOTIFY_KERNEL_METAINFO_H

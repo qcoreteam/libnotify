@@ -79,6 +79,103 @@ public:
       m_data &= mask;
       return *this;
    }
+
+   NOTIFY_DECL_RELAXED_CONSTEXPR inline Flags &operator&=(uint mask) NOTIFY_DECL_NOEXCEPT
+   {
+      m_data &= mask;
+      return *this;
+   }
+
+   NOTIFY_DECL_RELAXED_CONSTEXPR inline Flags &operator&=(Enum mask) NOTIFY_DECL_NOEXCEPT
+   {
+      m_data &= Int(mask);
+      return *this;
+   }
+
+   NOTIFY_DECL_RELAXED_CONSTEXPR inline Flags &operator|=(Flags flag) NOTIFY_DECL_NOEXCEPT
+   {
+      m_data |= flag.m_data;
+      return *this;
+   }
+
+   NOTIFY_DECL_RELAXED_CONSTEXPR inline Flags &operator|=(Enum flag) NOTIFY_DECL_NOEXCEPT
+   {
+      m_data |= Int(flag);
+      return *this;
+   }
+
+   NOTIFY_DECL_RELAXED_CONSTEXPR inline Flags &operator^=(Flags flag) NOTIFY_DECL_NOEXCEPT
+   {
+      m_data ^= flag.m_data;
+      return *this;
+   }
+
+   NOTIFY_DECL_RELAXED_CONSTEXPR inline Flags &operator^=(Enum flag) NOTIFY_DECL_NOEXCEPT
+   {
+      m_data ^= Int(flag);
+      return *this;
+   }
+
+   NOTIFY_DECL_CONSTEXPR inline operator Int() const NOTIFY_DECL_NOEXCEPT
+   {
+      return m_data;
+   }
+
+   NOTIFY_DECL_CONSTEXPR inline Flags operator|(Flags flag) const NOTIFY_DECL_NOEXCEPT
+   {
+      return Flags(Flag(m_data | flag.m_data));
+   }
+
+   NOTIFY_DECL_CONSTEXPR inline Flags operator|(Enum flag) const NOTIFY_DECL_NOEXCEPT
+   {
+      return Flags(Flag(m_data | Int(flag)));
+   }
+
+   NOTIFY_DECL_CONSTEXPR inline Flags operator^(Flags flag) const NOTIFY_DECL_NOEXCEPT
+   {
+      return Flags(Flag(m_data ^ flag.m_data));
+   }
+
+   NOTIFY_DECL_CONSTEXPR inline Flags operator^(Enum flag) const NOTIFY_DECL_NOEXCEPT
+   {
+      return Flags(Flag(m_data ^ Int(flag)));
+   }
+
+   NOTIFY_DECL_CONSTEXPR inline Flags operator&(int mask) const NOTIFY_DECL_NOEXCEPT
+   {
+      return Flags(Flag(m_data & mask));
+   }
+
+   NOTIFY_DECL_CONSTEXPR inline Flags operator&(uint mask) const NOTIFY_DECL_NOEXCEPT
+   {
+      return Flags(Flag(m_data & mask));
+   }
+
+   NOTIFY_DECL_CONSTEXPR inline Flags operator&(Enum mask) const NOTIFY_DECL_NOEXCEPT
+   {
+      return Flags(Flag(m_data & Int(mask)));
+   }
+
+   NOTIFY_DECL_CONSTEXPR inline Flags operator~() const NOTIFY_DECL_NOEXCEPT
+   {
+      return Flags(Flag(~m_data));
+   }
+
+   NOTIFY_DECL_CONSTEXPR inline bool operator!() const NOTIFY_DECL_NOEXCEPT
+   {
+      return !m_data;
+   }
+
+   NOTIFY_DECL_CONSTEXPR inline bool testFlag(Enum flag) const NOTIFY_DECL_NOEXCEPT
+   {
+      return (m_data & Int(flag)) == Int(flag) && (Int(flag) != 0 || m_data == Int(flag));
+   }
+
+   NOTIFY_DECL_RELAXED_CONSTEXPR inline Flags &setFlag(Enum flag, bool on = true) const NOTIFY_DECL_NOEXCEPT
+   {
+      return on ? (*this |= flag) : (*this &= ~flag);
+   }
+
 private:
 #ifdef NOTIFY_COMPILER_INITIALIZER_LISTS
    NOTIFY_DECL_CONSTEXPR static inline Int initializerListHelper(
@@ -94,5 +191,20 @@ private:
 };
 
 };
+
+#define NOTIFY_DECLARE_FLAGS(Flags, Enum) \
+   using Flags = Flags<Enum>;
+
+#define NOTIFY_DECLARE_OPERATORS_FOR_FLAGS(Flags) \
+NOTIFY_DECL_CONSTEXPR inline Flags<Flags::EnumType> \
+   operator|(Flags::EnumType flag1, Flags::EnumType flag2) NOTIFY_DECL_NOEXCEPT \
+{\
+   return Flags<Flags::EnumType>(flag1) | flag2;\
+}\
+NOTIFY_DECL_CONSTEXPR inline Flags<Flags::EnumType> \
+   operator|(Flags::EnumType flag1, Flags<Flags::EnumType> flags2) NOTIFY_DECL_NOEXCEPT \
+{\
+   return flag2 | flag1; \
+}
 
 #endif //NOTIFY_KERNEL_FLAGS_H
