@@ -173,9 +173,9 @@ public:
       return (m_data & Int(flag)) == Int(flag) && (Int(flag) != 0 || m_data == Int(flag));
    }
 
-   NOTIFY_DECL_RELAXED_CONSTEXPR inline Flags &setFlag(Enum flag, bool on = true) const NOTIFY_DECL_NOEXCEPT
+   NOTIFY_DECL_RELAXED_CONSTEXPR inline Flags &setFlag(Enum flag, bool on = true) NOTIFY_DECL_NOEXCEPT
    {
-      return on ? (*this |= flag) : (*this &= ~flag);
+      return on ? (*this |= Int(flag)) : (*this &= ~Int(flag));
    }
 
 private:

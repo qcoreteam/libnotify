@@ -61,7 +61,7 @@ TEST(FlagsTest, constExpr)
    ASSERT_TRUE(notifytest::verify_const_expr<notifytest::Option::ShowTabs | notifytest::Option::ShowAll>
                      (3));
    ASSERT_TRUE(notifytest::verify_const_expr<(notifytest::Option::ShowTabs | notifytest::Option::ShowAll) &
-         notifytest::Option::ShowTabs>(notifytest::Option::ShowTabs));
+                                             notifytest::Option::ShowTabs>(notifytest::Option::ShowTabs));
 }
 
 TEST(FlagsTest, signedness)
@@ -69,7 +69,7 @@ TEST(FlagsTest, signedness)
    NOTIFY_STATIC_ASSERT(notify::internal::IsUnsignedEnum<notifytest::Option>::value ==
                         notify::internal::IsUnsignedEnum<notifytest::Options::Int>::value);
    NOTIFY_STATIC_ASSERT(notify::internal::IsSignedEnum<notifytest::Option>::value ==
-                              notify::internal::IsSignedEnum<notifytest::Options::Int>::value);
+                        notify::internal::IsSignedEnum<notifytest::Options::Int>::value);
 }
 
 #if defined(NOTIFY_COMPILER_CLASS_ENUM)
@@ -120,5 +120,85 @@ TEST(FlagsTest, classEnum)
    ASSERT_EQ(flag4 & int(1), 1);
    ASSERT_EQ(flag4 & uint(1), 1);
    ASSERT_EQ(flag4 & MyClassTypeEnum::Opt1, 1);
+
+   MyClassTypeEnums aux;
+   aux = flag4;
+   aux &= int(1);
+   ASSERT_EQ(aux, 1);
+
+   aux = flag4;
+   aux &= uint(1);
+   ASSERT_EQ(aux, 1);
+
+   aux = flag4;
+   aux &= MyClassTypeEnum::Opt2;
+   ASSERT_EQ(aux, 2);
+
+   aux = flag4;
+   aux &= MyClassTypeEnum::Opt2;
+   ASSERT_EQ(aux, 2);
+
+   aux = flag4 ^ flag4;
+   ASSERT_EQ(aux, 0);
+
+   aux = flag4 ^ flag1;
+   ASSERT_EQ(aux, 2);
+
+   aux = flag4 ^ flag3;
+   ASSERT_EQ(aux, 3);
+
+   aux = flag4;
+   aux ^= MyClassTypeEnum::Opt1;
+   ASSERT_EQ(aux, 2);
+
+   aux = flag4;
+   aux ^= MyClassTypeEnum::Opt2;
+   ASSERT_EQ(aux, 1);
+
+   aux = flag1 | flag2;
+   ASSERT_EQ(aux, 3);
+
+   aux = MyClassTypeEnum::Opt1 | MyClassTypeEnum::Opt2;
+   ASSERT_EQ(aux, 3);
+
+   aux = flag1;
+   aux |= flag2;
+   ASSERT_EQ(aux, 3);
+
+   aux = MyClassTypeEnum::Opt1;
+   aux |= MyClassTypeEnum::Opt2;
+   ASSERT_EQ(aux, 3);
+
+   aux = ~flag1;
+   ASSERT_EQ(aux, -2);
 #endif
+}
+
+TEST(FlagsTest, initializerLists)
+{
+#ifdef  NOTIFY_COMPILER_INITIALIZER_LISTS
+   notifytest::Options opts = {
+         notifytest::Option::ShowAll,
+         notifytest::Option::ShowTabs
+   };
+   ASSERT_TRUE(opts.testFlag(notifytest::Option::ShowAll));
+   ASSERT_TRUE(opts.testFlag(notifytest::Option::ShowTabs));
+#  ifdef NOTIFY_COMPILER_CLASS_ENUM
+   MyClassTypeEnums flags = {
+         MyClassTypeEnum::Opt1,
+         MyClassTypeEnum::Opt2
+   };
+   ASSERT_TRUE(flags.testFlag(MyClassTypeEnum::Opt1));
+   ASSERT_TRUE(flags.testFlag(MyClassTypeEnum::Opt2));
+#  endif
+#endif
+}
+
+TEST(FlagsTest, setFlags)
+{
+   MyClassTypeEnums flags;
+   flags.setFlag(MyClassTypeEnum::Opt1, true);
+   ASSERT_TRUE(flags.testFlag(MyClassTypeEnum::Opt1));
+   flags.setFlag(MyClassTypeEnum::Opt1, false);
+   ASSERT_FALSE(flags.testFlag(MyClassTypeEnum::Opt1));
 }
