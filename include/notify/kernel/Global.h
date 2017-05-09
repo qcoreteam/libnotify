@@ -170,4 +170,15 @@ namespace notify
 using HANDLE = void *;
 } // notify
 
+#ifdef NOTIFY_CC_MSVC
+#  define NOTIFY_NEVER_INLINE __declspec(noinline)
+#  define NOTIFY_ALWAYS_INLINE __forceinline
+#elif defined(NOTIFY_CC_GNU)
+#  define NOTIFY_NEVER_INLINE __attribute__((noinline))
+#  define NOTIFY_ALWAYS_INLINE inline __attribute__((always_inline))
+#else
+#  define NOTIFY_NEVER_INLINE
+#  define NOTIFY_ALWAYS_INLINE inline
+#endif
+
 #endif //NOTIFY_KERNEL_GLOBAL_H
