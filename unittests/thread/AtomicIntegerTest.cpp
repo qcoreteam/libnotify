@@ -16,6 +16,8 @@
 #include "gtest/gtest.h"
 // for test only
 #define NOTIFY_ATOMIC_FORCE_CXX11
+#define NOTIFY_ATOMIC_TEST_TYPE
+
 #ifdef NOTIFY_ATOMIC_FORCE_CXX11
 #  if defined(__INTEL_COMPILER) && __INTEL_COMPILER >= 1500 && (__cplusplus >= 201103L || defined(__INTEL_CXX11_MODE__))
 #  elif defined(__clang__) &&  (__cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__))
@@ -36,6 +38,63 @@
 #include "notify/thread/Atomic.h"
 #include <limits.h>
 #include <wchar.h>
+
+#if !defined(NOTIFY_ATOMIC_INT32_IS_SUPPORTED)
+#  error "AtomicInteger for 32-bit types must be supported!"
+#endif
+#if NOTIFY_POINTER_SIZE == 8 && !defined(NOTIFY_ATOMIC_INT64_IS_SUPPORTED)
+#  error "AtomicInteger for 64-bit types must be supported on 64-bit builds!"
+#endif
+
+#define TYPE_SUPPORTED_int             1
+#define TYPE_SUPPORTED_uint            1
+#define TYPE_SUPPORTED_long            1
+#define TYPE_SUPPORTED_ulong           1
+#define TYPE_SUPPORTED_n_ptrdiff       1
+#define TYPE_SUPPORTED_n_uintptr       1
+
+#if (defined(__SIZEOF_WCHAR_T__) && (__SIZEOF_WCHAR_T__-0) > 2) \
+    || (defined(WCHAR_MAX) && (WCHAR_MAX-0 > 0x10000))
+#  define TYPE_SUPPORTED_wchar_t       1
+#endif
+#ifdef NOTIFY_COMPILER_UNICODE_STRINGS
+#  define TYPE_SUPPORTED_char32_t      1
+#endif
+
+#ifdef NOTIFY_ATOMIC_INT8_IS_SUPPORTED
+#  define TYPE_SUPPORTED_char          1
+#  define TYPE_SUPPORTED_uchar         1
+#  define TYPE_SUPPORTED_schar         1
+#endif
+#ifdef NOTIFY_ATOMIC_INT16_IS_SUPPORTED
+#  define TYPE_SUPPORTED_short         1
+#  define TYPE_SUPPORTED_ushort        1
+#  ifdef NOTIFY_COMPILER_UNICODE_STRINGS
+#     define TYPE_SUPPORTED_char16_t   1
+#  endif
+#  ifndef TYPE_SUPPORTED_wchar_t
+#     define TYPE_SUPPORTED_wchar_t    1
+#  endif
+#endif
+
+#  define NOTIFY_ATOMIC_TYPE_SUPPORTED2(type)     TYPE_SUPPORTED_ ## type
+#  define NOTIFY_ATOMIC_TYPE_SUPPORTED(type)      NOTIFY_ATOMIC_TYPE_SUPPORTED2(type)
+
+#ifdef NOTIFY_ATOMIC_INT64_IS_SUPPORTED
+#  define TYPE_SUPPORTED_ulonglong     1
+#  define TYPE_SUPPORTED_n_longlong    1
+#endif
+
+#if NOTIFY_ATOMIC_TYPE_SUPPORTED(NOTIFY_ATOMIC_TEST_TYPE)
+#  define TEST_TYPE NOTIFY_ATOMIC_TEST_TYPE
+#else
+#  define TEST_TYPE int
+#  define NOTIFY_TEST_NOT_SUPPORTED
+#endif
+
+typedef signed char schar;
+typedef TEST_TYPE Type;
+typedef Type T; // shorthand
 
 namespace
 {
