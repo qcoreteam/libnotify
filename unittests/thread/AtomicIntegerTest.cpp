@@ -46,12 +46,7 @@
 #  error "AtomicInteger for 64-bit types must be supported on 64-bit builds!"
 #endif
 
-#define TYPE_SUPPORTED_int             1
-#define TYPE_SUPPORTED_uint            1
-#define TYPE_SUPPORTED_long            1
-#define TYPE_SUPPORTED_ulong           1
-#define TYPE_SUPPORTED_n_ptrdiff       1
-#define TYPE_SUPPORTED_n_uintptr       1
+#define NOTIFY_TARGET_TEST_TYPES int, uint, long, ulong, n_ptrdiff, n_uintptr
 
 #if (defined(__SIZEOF_WCHAR_T__) && (__SIZEOF_WCHAR_T__-0) > 2) \
     || (defined(WCHAR_MAX) && (WCHAR_MAX-0 > 0x10000))
@@ -61,11 +56,7 @@
 #  define TYPE_SUPPORTED_char32_t      1
 #endif
 
-#ifdef NOTIFY_ATOMIC_INT8_IS_SUPPORTED
-#  define TYPE_SUPPORTED_char          1
-#  define TYPE_SUPPORTED_uchar         1
-#  define TYPE_SUPPORTED_schar         1
-#endif
+
 #ifdef NOTIFY_ATOMIC_INT16_IS_SUPPORTED
 #  define TYPE_SUPPORTED_short         1
 #  define TYPE_SUPPORTED_ushort        1
@@ -92,17 +83,66 @@
 #  define NOTIFY_TEST_NOT_SUPPORTED
 #endif
 
+namespace
+{
+
 typedef signed char schar;
 typedef TEST_TYPE Type;
 typedef Type T; // shorthand
 
-namespace
+enum
 {
+   TypeIsUnsiged = Type(-1) > Type(1),
+   TypeIsSigned = !TypeIsUnsiged
+};
 
+template <bool> struct LargeIntTemplate;
+template <>
+struct LargeIntTemplate<true>
+{
+   typedef n_uint64 Type;
+};
+
+template <>
+struct LargeIntTemplate<false>
+{
+   typedef n_int64 Type;
+};
+
+typedef LargeIntTemplate<TypeIsUnsiged>::Type LargeInt;
+template <typename T>
+class AtomicIntegerTest : public ::testing::Test
+{
+};
+
+typedef ::testing::Types<
+      int,
+      uint,
+      long,
+      ulong,
+      n_ptrdiff,
+      n_uintptr> AtomicDefaultValueTypes;
+TYPED_TEST_CASE(AtomicIntegerTest, AtomicDefaultValueTypes);
+
+#ifdef NOTIFY_ATOMIC_INT8_IS_SUPPORTED
+template <typename T>
+class AtomicIntegerInt8Test : public ::testing::Test
+{
+};
+typedef ::testing::Types<char, uchar, schar> AtomicInt8ValueTypes;
+TYPED_TEST_CASE(AtomicIntegerInt8Test, AtomicInt8ValueTypes);
+#endif
 
 }
 
-TEST(AtomicIntegerTest, staticChecks)
+template <typename TypeParam>
+void static_checks(TypeParam &)
 {
+   //NOTIFY_STATIC_ASSERT(sizeof(notify::AtomicInteger<TypeParam>) == sizeof(TypeParam));
+}
+
+TYPED_TEST(AtomicIntegerTest, staticChecks)
+{
+   static_checks(*this, TypeParam());
 
 }
