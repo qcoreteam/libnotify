@@ -55,7 +55,7 @@ struct AtomicTraits
 #  define NOTIFY_ATOMIC_INT32_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #  define NOTIFY_ATOMIC_INT32_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 template <>
-inline bool AtomicTrait<4>::isLockFree()
+inline bool AtomicTraits<4>::isLockFree()
 {
    return true;
 };
@@ -121,7 +121,7 @@ struct AtomicOpsSupport<1>
 #  define NOTIFY_ATOMIC_INT16_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #  define NOTIFY_ATOMIC_INT16_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 template <>
-inline bool AtomicTrait<1>::isLockFree()
+inline bool AtomicTraits<1>::isLockFree()
 {
    return true;
 };
@@ -131,7 +131,7 @@ inline bool AtomicTrait<1>::isLockFree()
 #  define NOTIFY_ATOMIC_INT16_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 #  define NOTIFY_ATOMIC_INT16_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
 template <>
-inline bool AtomicTrait<1>::isLockFree()
+inline bool AtomicTraits<1>::isLockFree()
 {
    return false;
 };
@@ -141,7 +141,7 @@ inline bool AtomicTrait<1>::isLockFree()
 #  define NOTIFY_ATOMIC_INT16_FETCH_AND_STORE_IS_NEVER_NATIVE
 #  define NOTIFY_ATOMIC_INT16_FETCH_AND_ADD_IS_NEVER_NATIVE
 template <>
-inline bool AtomicTrait<1>::isLockFree()
+inline bool AtomicTraits<1>::isLockFree()
 {
    return false;
 };
@@ -161,7 +161,7 @@ struct AtomicOpsSupport<2>
 #  define NOTIFY_ATOMIC_INT16_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #  define NOTIFY_ATOMIC_INT16_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 template <>
-inline bool AtomicTrait<2>::isLockFree()
+inline bool AtomicTraits<2>::isLockFree()
 {
    return true;
 };
@@ -171,7 +171,7 @@ inline bool AtomicTrait<2>::isLockFree()
 #  define NOTIFY_ATOMIC_INT16_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 #  define NOTIFY_ATOMIC_INT16_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
 template <>
-inline bool AtomicTrait<2>::isLockFree()
+inline bool AtomicTraits<2>::isLockFree()
 {
    return false;
 };
@@ -181,7 +181,7 @@ inline bool AtomicTrait<2>::isLockFree()
 #  define NOTIFY_ATOMIC_INT16_FETCH_AND_STORE_IS_NEVER_NATIVE
 #  define NOTIFY_ATOMIC_INT16_FETCH_AND_ADD_IS_NEVER_NATIVE
 template <>
-inline bool AtomicTrait<2>::isLockFree()
+inline bool AtomicTraits<2>::isLockFree()
 {
    return false;
 };
@@ -201,7 +201,7 @@ struct AtomicOpsSupport<8>
 #  define NOTIFY_ATOMIC_INT64_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #  define NOTIFY_ATOMIC_INT64_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 template <>
-inline bool AtomicTrait<8>::isLockFree()
+inline bool AtomicTraits<8>::isLockFree()
 {
    return true;
 };
@@ -211,7 +211,7 @@ inline bool AtomicTrait<8>::isLockFree()
 #  define NOTIFY_ATOMIC_INT64_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 #  define NOTIFY_ATOMIC_INT64_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
 template <>
-inline bool AtomicTrait<8>::isLockFree()
+inline bool AtomicTraits<8>::isLockFree()
 {
    return false;
 };
@@ -221,16 +221,16 @@ inline bool AtomicTrait<8>::isLockFree()
 #  define NOTIFY_ATOMIC_INT64_FETCH_AND_STORE_IS_NEVER_NATIVE
 #  define NOTIFY_ATOMIC_INT64_FETCH_AND_ADD_IS_NEVER_NATIVE
 template <>
-inline bool AtomicTrait<8>::isLockFree()
+inline bool AtomicTraits<8>::isLockFree()
 {
    return false;
 };
 #endif
 
-template <typename T>
+template <typename ValueType>
 struct AtomicOps
 {
-   typedef std::atomic<T> AtomicType;
+   typedef std::atomic<ValueType> AtomicType;
 
    template <typename T>
    static inline T load(const std::atomic<T> &atomicValue) NOTIFY_DECL_NOEXCEPT
@@ -245,13 +245,13 @@ struct AtomicOps
    }
 
    template <typename T>
-   static inline loadAcquire(const std::atomic<T> &atomicValue) NOTIFY_DECL_NOEXCEPT
+   static inline T loadAcquire(const std::atomic<T> &atomicValue) NOTIFY_DECL_NOEXCEPT
    {
       return atomicValue.load(std::memory_order_acquire);
    }
 
    template <typename T>
-   static inline loadAcquire(const volatile std::atomic<T> &atomicValue) NOTIFY_DECL_NOEXCEPT
+   static inline T loadAcquire(const volatile std::atomic<T> &atomicValue) NOTIFY_DECL_NOEXCEPT
    {
       return atomicValue.load(std::memory_order_acquire);
    }
@@ -292,7 +292,7 @@ struct AtomicOps
 
    static inline bool isTestAndSetNative() NOTIFY_DECL_NOEXCEPT
    {
-      return AtomicTraits<sizeof(T)>::isLockFree();
+      return AtomicTraits<sizeof(ValueType)>::isLockFree();
    }
 
    static inline bool isTestAndSetWaitFree() NOTIFY_DECL_NOEXCEPT
@@ -362,25 +362,25 @@ struct AtomicOps
       return false;
    }
 
-   template <typename>
+   template <typename T>
    static T fetchAndStoreRelaxed(std::atomic<T> &atomicValue, T newValue) NOTIFY_DECL_NOEXCEPT
    {
       return atomicValue.exchange(newValue, std::memory_order_relaxed);
    }
 
-   template <typename>
+   template <typename T>
    static T fetchAndStoreAcquire(std::atomic<T> &atomicValue, T newValue) NOTIFY_DECL_NOEXCEPT
    {
       return atomicValue.exchange(newValue, std::memory_order_acquire);
    }
 
-   template <typename>
+   template <typename T>
    static T fetchAndStoreRelease(std::atomic<T> &atomicValue, T newValue) NOTIFY_DECL_NOEXCEPT
    {
       return atomicValue.exchange(newValue, std::memory_order_release);
    }
 
-   template <typename>
+   template <typename T>
    static T fetchAndStoreOrdered(std::atomic<T> &atomicValue, T newValue) NOTIFY_DECL_NOEXCEPT
    {
       return atomicValue.exchange(newValue, std::memory_order_acq_rel);
@@ -529,7 +529,7 @@ struct AtomicOps
    T fetchAndXorRelaxed(std::atomic<T> &atomicValue,
                        typename AtomicAdditiveType<T>::AdditiveType operand) NOTIFY_DECL_NOEXCEPT
    {
-      return atomicValue.fetch_xor(operand, std::memory_xorder_relaxed);
+      return atomicValue.fetch_xor(operand, std::memory_order_relaxed);
    }
 
    template <typename T>
@@ -537,7 +537,7 @@ struct AtomicOps
    T fetchAndXorAcquire(std::atomic<T> &atomicValue,
                        typename AtomicAdditiveType<T>::AdditiveType operand) NOTIFY_DECL_NOEXCEPT
    {
-      return atomicValue.fetch_xor(operand, std::memory_xorder_acquire);
+      return atomicValue.fetch_xor(operand, std::memory_order_acquire);
    }
 
    template <typename T>
@@ -545,7 +545,7 @@ struct AtomicOps
    T fetchAndXorRelease(std::atomic<T> &atomicValue,
                        typename AtomicAdditiveType<T>::AdditiveType operand) NOTIFY_DECL_NOEXCEPT
    {
-      return atomicValue.fetch_xor(operand, std::memory_xorder_release);
+      return atomicValue.fetch_xor(operand, std::memory_order_release);
    }
 
    template <typename T>
@@ -553,7 +553,7 @@ struct AtomicOps
    T fetchAndXorOrdered(std::atomic<T> &atomicValue,
                        typename AtomicAdditiveType<T>::AdditiveType operand) NOTIFY_DECL_NOEXCEPT
    {
-      return atomicValue.fetch_xor(operand, std::memory_xorder_acq_rel);
+      return atomicValue.fetch_xor(operand, std::memory_order_acq_rel);
    }
 };
 

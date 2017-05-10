@@ -51,7 +51,7 @@ public:
    }
 };
 
-class AtomicInt : public BasicAtomicInteger<int>
+class AtomicInt : public AtomicInteger<int>
 {
 public:
 #ifdef NOTIFY_BASIC_ATOMIC_HAS_CONSTRUCTORS
@@ -66,7 +66,7 @@ class AtomicPointer : public BasicAtomicPointer<T>
 {
 public:
 #ifdef NOTIFY_BASIC_ATOMIC_HAS_CONSTRUCTORS
-   constexpr AtomicPointer(T *value = 0) NOTIFY_DECL_NOEXCEPT : QBasicAtomicPointer<T>(value)
+   constexpr AtomicPointer(T *value = 0) NOTIFY_DECL_NOEXCEPT : BasicAtomicPointer<T>(value)
    {}
 #else
    inline AtomicPointer(T *value = 0) NOTIFY_DECL_NOEXCEPT
@@ -90,7 +90,7 @@ public:
 #  undef NOTIFY_BASIC_ATOMIC_HAS_CONSTRUCTORS
 #endif
 
-template <template T>
+template <typename T>
 inline void atomic_assign(T *&d, T *x)
 {
    if (d == x){

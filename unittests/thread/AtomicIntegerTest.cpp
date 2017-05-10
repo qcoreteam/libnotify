@@ -14,12 +14,36 @@
 // Created by zzu_softboy on 10/05/2017.
 
 #include "gtest/gtest.h"
+// for test only
+#define NOTIFY_ATOMIC_FORCE_CXX11
+#ifdef NOTIFY_ATOMIC_FORCE_CXX11
+#  if defined(__INTEL_COMPILER) && __INTEL_COMPILER >= 1500 && (__cplusplus >= 201103L || defined(__INTEL_CXX11_MODE__))
+#  elif defined(__clang__) &&  (__cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__))
+#    if !__has_feature(cxx_constexpr) || !__has_feature(cxx_atomic) || !__has_include(<atomic>)
+#      undef NOTIFY_ATOMIC_FORCE_CXX11
+#    endif
+#  elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 407 && (__cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__))
+#  elif defined(_MSC_VER) && _MSC_VER >= 1900
+#  else
+#     undef NOTIFY_ATOMIC_FORCE_CXX11
+#  endif
+#  ifndef NOTIFY_ATOMIC_FORCE_CXX11
+#    undef NOTIFY_ATOMIC_TEST_TYPE
+#    define NOTIFY_ATOMIC_TEST_TYPE unsupported
+#  endif
+#endif
 
-
+#include "notify/thread/Atomic.h"
+#include <limits.h>
+#include <wchar.h>
 
 namespace
 {
 
 
+}
+
+TEST(AtomicIntegerTest, staticChecks)
+{
 
 }

@@ -311,27 +311,27 @@ struct GenericAtomicOps
    T fetchAndSubAcquire(T &atomicValue,
                         typename AtomicAdditiveType<T>::AdditiveType valueToSub) NOTIFY_DECL_NOEXCEPT
    {
-      T tmp = fetchAndSubRelaxed(atomicValue, valueToAdd);
+      T tmp = fetchAndSubRelaxed(atomicValue, valueToSub);
       BaseClass::acquireMemoryFence(atomicValue);
       return tmp;
    }
 
    template <typename T>
    static NOTIFY_ALWAYS_INLINE
-   T fetchAndAddRelease(T &atomicValue,
+   T fetchAndSubRelease(T &atomicValue,
                         typename AtomicAdditiveType<T>::AdditiveType valueToSub) NOTIFY_DECL_NOEXCEPT
    {
       BaseClass::releaseMemoryFence(atomicValue);
-      return fetchAndSubRelaxed(atomicValue, valueToAdd);
+      return fetchAndSubRelaxed(atomicValue, valueToSub);
    }
 
    template <typename T>
    static NOTIFY_ALWAYS_INLINE
-   T fetchAndAddOrdered(T &atomicValue,
+   T fetchAndSubOrdered(T &atomicValue,
                         typename AtomicAdditiveType<T>::AdditiveType valueToSub) NOTIFY_DECL_NOEXCEPT
    {
       BaseClass::orderedMemoryFence(atomicValue);
-      return fetchAndSubRelaxed(atomicValue, valueToAdd);
+      return fetchAndSubRelaxed(atomicValue, valueToSub);
    }
 
    template <typename T>

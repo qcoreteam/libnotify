@@ -45,7 +45,7 @@ class BasicAtomicInteger
 public:
    typedef threadinternal::AtomicOps<T> OpsCls;
    NOTIFY_STATIC_ASSERT_X(std::is_integral<T>::value, "template parameter is not an integral type");
-   NOTIFY_STATIC_ASSERT_X(threadinternal::AtomicOpsSupport<T>::IsSupported,
+   NOTIFY_STATIC_ASSERT_X(threadinternal::AtomicOpsSupport<sizeof(T)>::IsSupported,
                           "template parameter is an integral of a size not supported on this platform");
    typename OpsCls::AtomicType m_atomicValue;
 
@@ -418,9 +418,11 @@ public:
       return OpsCls::testAndSetOrdered(m_atomicValue, expectedValue, newValue);
    }
 
-   bool testAndSetRelaxed(AtomicType expectedValue, AtomicType newValue) NOTIFY_DECL_NOEXCEPT
+   bool testAndSetRelaxed(AtomicType expectedValue,
+                          AtomicType newValue,
+                          AtomicType &currentValue) NOTIFY_DECL_NOEXCEPT
    {
-      return OpsCls::testAndSetRelaxed(m_atomicValue, expectedValue, newValue);
+      return OpsCls::testAndSetRelaxed(m_atomicValue, expectedValue, newValue, currentValue);
    }
 
    bool testAndSetAcquire(AtomicType expectedValue,
@@ -499,7 +501,7 @@ public:
       return OpsCls::fetchAndAddRelease(m_atomicValue, valueToAdd);
    }
 
-   AtomicTyp fetchAndAddOrdered(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
+   AtomicType fetchAndAddOrdered(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndAddOrdered(m_atomicValue, valueToAdd);
    }
@@ -519,7 +521,7 @@ public:
       return OpsCls::fetchAndSubRelease(m_atomicValue, valueToAdd);
    }
 
-   AtomicTyp fetchAndSubOrdered(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
+   AtomicType fetchAndSubOrdered(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndSubOrdered(m_atomicValue, valueToAdd);
    }
