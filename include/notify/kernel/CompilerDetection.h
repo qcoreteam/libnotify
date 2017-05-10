@@ -1047,9 +1047,10 @@
 #endif
 
 #ifdef NOTIFY_COMPILER_CONSTEXPR
+
 #  if defined(__cpp_constexpr) && __cpp_constexpr-0 >= 201304
 #     define NOTIFY_DECL_CONSTEXPR constexpr
-#     define NOTIFY_DECL_RELAXED_CONSTEXPRPR constexpr
+#     define NOTIFY_DECL_RELAXED_CONSTEXPR constexpr
 #     define NOTIFY_CONSTEXPR constexpr
 #     define NOTIFY_RELAXED_CONSTEXPR constexpr
 #  else

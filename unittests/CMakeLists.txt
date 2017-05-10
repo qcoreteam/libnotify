@@ -3,5 +3,6 @@ set_target_properties(UnitTests PROPERTIES FOLDER "UnitTests")
 set(TEST_SRCS
     EventMgrTest.cpp
     FlagsTest.cpp
-    VersionTest.cpp)
+    VersionTest.cpp
+    thread/AtomicIntegerTest.cpp)
 notify_add_unittest(UnitTests KernelTest ${TEST_SRCS})
