@@ -171,7 +171,7 @@ typedef ::testing::Types<
 #ifdef NOTIFY_ATOMIC_INT64_TEST_TYPES
       ,NOTIFY_ATOMIC_INT64_TEST_TYPES
 #endif
-      > AtomicValueTypes;
+> AtomicValueTypes;
 TYPED_TEST_CASE(AtomicIntegerTest, AtomicValueTypes);
 template <bool> inline void boolean_helper() {}
 
@@ -204,5 +204,40 @@ TYPED_TEST(AtomicIntegerTest, constructor)
       ASSERT_EQ(atomic2.load(), TypeParam(value));
       ASSERT_GE(atomic.load(), std::numeric_limits<TypeParam>::min());
       ASSERT_LE(atomic.load(), std::numeric_limits<TypeParam>::max());
+   }
+}
+
+TYPED_TEST(AtomicIntegerTest, copy)
+{
+   for (const TypeParam &value : this->m_backendValues)
+   {
+      notify::AtomicInteger<TypeParam> atomic(value);
+      notify::AtomicInteger<TypeParam> atomicCopy(atomic);
+      ASSERT_EQ(atomic.load(), atomicCopy.load());
+      notify::AtomicInteger<TypeParam> atomicCopy2 = atomic;
+      ASSERT_EQ(atomic.load(), atomicCopy2.load());
+      notify::AtomicInteger<TypeParam> atomicCopy3(std::move(atomic));
+      ASSERT_EQ(atomic.load(), atomicCopy3.load());
+      notify::AtomicInteger<TypeParam> atomicCopy4 = std::move(atomic);
+      ASSERT_EQ(atomic.load(), atomicCopy4.load());
+   }
+}
+
+TYPED_TEST(AtomicIntegerTest, assign)
+{
+   for (const TypeParam &value : this->m_backendValues)
+   {
+      notify::AtomicInteger<TypeParam> atomic(value);
+      notify::AtomicInteger<TypeParam> atomicCopy;
+      atomicCopy = atomic;  // operator=(const AtomicInteger &)
+      ASSERT_EQ(atomic.load(), atomicCopy.load());
+      notify::AtomicInteger<TypeParam> atomicCopy2;
+      atomicCopy2 = atomic.load(); // AtomicInteger(T value = 0) constructor
+      notify::AtomicInteger<TypeParam> atomicCopy3;
+      atomicCopy3 = std::move(atomicCopy);
+      ASSERT_EQ(atomic.load(), atomicCopy3.load());
+      notify::AtomicInteger<TypeParam> atomicCopy4;
+      atomicCopy4 = std::move(atomicCopy2);
+      ASSERT_EQ(atomic.load(), atomicCopy4.load());
    }
 }
