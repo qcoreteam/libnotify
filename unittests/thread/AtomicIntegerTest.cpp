@@ -196,5 +196,13 @@ TYPED_TEST(AtomicIntegerTest, staticChecks)
 
 TYPED_TEST(AtomicIntegerTest, constructor)
 {
-
+   for (const TypeParam &value : this->m_backendValues)
+   {
+      notify::AtomicInteger<TypeParam > atomic(value);
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      notify::AtomicInteger<TypeParam > atomic2 = value;
+      ASSERT_EQ(atomic2.load(), TypeParam(value));
+      ASSERT_GE(atomic.load(), std::numeric_limits<TypeParam>::min());
+      ASSERT_LE(atomic.load(), std::numeric_limits<TypeParam>::max());
+   }
 }
