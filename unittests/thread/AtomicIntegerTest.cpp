@@ -38,6 +38,8 @@
 #include "notify/thread/Atomic.h"
 #include <limits.h>
 #include <wchar.h>
+#include <vector>
+#include <iostream>
 
 #if !defined(NOTIFY_ATOMIC_INT32_IS_SUPPORTED)
 #  error "AtomicInteger for 32-bit types must be supported!"
@@ -72,10 +74,85 @@ typedef signed char schar;
 #  define NOTIFY_ATOMIC_INT64_TEST_TYPES n_longlong, n_ulonglong
 #endif
 
+template <bool> struct LargeIntTemplate;
+template <>     struct LargeIntTemplate<true>  { typedef n_uint64 Type; };
+template <>     struct LargeIntTemplate<false> { typedef n_int64 Type; };
+
+
 template <typename T>
 class AtomicIntegerTest : public ::testing::Test
 {
+public:
+   enum {
+      TypeIsUnsigned = T(-1) > T(0),
+      TypeIsSigned = !TypeIsUnsigned
+   };
+   typedef typename LargeIntTemplate<TypeIsUnsigned>::Type LargeInt;
+   typedef std::numeric_limits<T> Limits;
+protected:
+   static std::vector<LargeInt> m_backendValues;
+public:
+   static void SetUpTestCase();
 };
+
+template<typename T>
+std::vector<typename AtomicIntegerTest<T>::LargeInt> AtomicIntegerTest<T>::m_backendValues;
+
+template <typename T>
+void AtomicIntegerTest<T>::SetUpTestCase()
+{
+   m_backendValues.push_back(LargeInt(0));
+   m_backendValues.push_back(LargeInt(1));
+   m_backendValues.push_back(LargeInt(23));
+   if (TypeIsSigned) {
+      m_backendValues.push_back(n_int64(-1));
+      m_backendValues.push_back(n_int64(-50));
+   }
+
+   if (TypeIsSigned && Limits::min() < n_int64(SCHAR_MIN)) {
+      m_backendValues.push_back(n_int64(SCHAR_MIN));
+   }
+   if (Limits::max() > LargeInt(SCHAR_MAX)) {
+      m_backendValues.push_back(LargeInt(SCHAR_MAX));
+   }
+   if (Limits::max() > LargeInt(UCHAR_MAX)) {
+      m_backendValues.push_back(LargeInt(UCHAR_MAX));
+   }
+   if (TypeIsSigned && Limits::min() < -n_int64(UCHAR_MAX)) {
+      m_backendValues.push_back(-n_int64(UCHAR_MAX));
+   }
+   if (Limits::max() > LargeInt(SHRT_MAX)) {
+      m_backendValues.push_back(LargeInt(SHRT_MAX));
+   }
+   if (TypeIsSigned && Limits::min() < n_int64(SHRT_MIN)) {
+      m_backendValues.push_back(n_int64(SHRT_MAX));
+   }
+   if (Limits::max() > LargeInt(USHRT_MAX)) {
+      m_backendValues.push_back(LargeInt(USHRT_MAX));
+   }
+   if (TypeIsSigned && Limits::min() < -n_int64(USHRT_MAX)) {
+      m_backendValues.push_back(-n_int64(USHRT_MAX));
+   }
+   if (Limits::max() > LargeInt(INT_MAX)) {
+      m_backendValues.push_back(LargeInt(INT_MAX));
+   }
+   if (TypeIsSigned && Limits::min() < n_int64(INT_MIN)) {
+      m_backendValues.push_back(n_int64(INT_MIN));
+   }
+   if (Limits::max() > LargeInt(UINT_MAX)) {
+      m_backendValues.push_back(LargeInt(UINT_MAX));
+   }
+   if (TypeIsSigned && Limits::min() < -n_int64(UINT_MAX)) {
+      m_backendValues.push_back(-n_int64(UINT_MAX));
+   }
+   if (Limits::max() > LargeInt(std::numeric_limits<n_int64>::max())) {
+      m_backendValues.push_back(LargeInt(std::numeric_limits<n_int64>::max()));
+   }
+   if (TypeIsSigned) {
+      m_backendValues.push_back(n_int64(Limits::min()));
+   }
+   m_backendValues.push_back(LargeInt(Limits::max()));
+}
 
 typedef ::testing::Types<
       NOTIFY_ATOMIC_BASIC_TEST_TYPES
@@ -96,10 +173,28 @@ typedef ::testing::Types<
 #endif
       > AtomicValueTypes;
 TYPED_TEST_CASE(AtomicIntegerTest, AtomicValueTypes);
+template <bool> inline void boolean_helper() {}
 
 }
 
 TYPED_TEST(AtomicIntegerTest, staticChecks)
 {
+   typedef struct{
+      TypeParam type;
+   } TypeStruct;
    NOTIFY_STATIC_ASSERT(sizeof(notify::AtomicInteger<TypeParam>) == sizeof(TypeParam));
+   NOTIFY_STATIC_ASSERT(alignof(notify::AtomicInteger<TypeParam>) == alignof(TypeStruct));
+   (void) notify::AtomicInteger<TypeParam>::isReferenceCountingNative();
+   (void) notify::AtomicInteger<TypeParam>::isReferenceCountingWaitFree();
+   (void) notify::AtomicInteger<TypeParam>::isTestAndSetNative();
+   (void) notify::AtomicInteger<TypeParam>::isTestAndSetWaitFree();
+   (void) notify::AtomicInteger<TypeParam>::isFetchAndStoreNative();
+   (void) notify::AtomicInteger<TypeParam>::isFetchAndStoreWaitFree();
+   (void) notify::AtomicInteger<TypeParam>::isFetchAndAddNative();
+   (void) notify::AtomicInteger<TypeParam>::isFetchAndAddWaitFree();
+}
+
+TYPED_TEST(AtomicIntegerTest, constructor)
+{
+
 }
