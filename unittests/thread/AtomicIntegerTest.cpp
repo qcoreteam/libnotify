@@ -241,3 +241,77 @@ TYPED_TEST(AtomicIntegerTest, assign)
       ASSERT_EQ(atomic.load(), atomicCopy4.load());
    }
 }
+
+TYPED_TEST(AtomicIntegerTest, operatorInteger)
+{
+   for (const TypeParam &value : this->m_backendValues)
+   {
+      notify::AtomicInteger<TypeParam> atomic(value);
+      TypeParam value2 = atomic;
+      ASSERT_EQ(value2, atomic.load());
+      ASSERT_EQ(value2, TypeParam(value));
+   }
+}
+
+TYPED_TEST(AtomicIntegerTest, loadAcquireStoreRelease)
+{
+   for (const TypeParam &value : this->m_backendValues)
+   {
+      notify::AtomicInteger<TypeParam> atomic(value);
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+      atomic.storeRelease(~value);
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(~value));
+      atomic.storeRelease(value);
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+   }
+}
+
+TYPED_TEST(AtomicIntegerTest, refDeref)
+{
+   for (const TypeParam &value : this->m_backendValues)
+   {
+      const bool needToPreventOverflow = AtomicIntegerTest<TypeParam>::TypeIsSigned && value == std::numeric_limits<TypeParam>::max();
+      const bool needToPreventUnderlow = AtomicIntegerTest<TypeParam>::TypeIsSigned && value == std::numeric_limits<TypeParam>::min();
+      TypeParam nextValue = TypeParam(value);
+      TypeParam prevValue = TypeParam(value);
+      if (!needToPreventOverflow) {
+         ++nextValue;
+      }
+      if (!needToPreventUnderlow) {
+         --prevValue;
+      }
+      notify::AtomicInteger<TypeParam> atomic(value);
+      if (!needToPreventOverflow) {
+         ASSERT_EQ(atomic.ref(), (nextValue != 0));
+         ASSERT_EQ(atomic.load(), nextValue);
+         ASSERT_EQ(atomic.deref(), (value != 0));
+      }
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      if (!needToPreventUnderlow) {
+         ASSERT_EQ(atomic.deref(), (prevValue != 0));
+         ASSERT_EQ(atomic.load(), prevValue);
+         ASSERT_EQ(atomic.ref(), (value != 0));
+      }
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+
+      if (!needToPreventOverflow) {
+         ASSERT_EQ(++atomic, nextValue);
+         ASSERT_EQ(--atomic, TypeParam(value));
+      }
+
+      if (!needToPreventUnderlow) {
+         ASSERT_EQ(--atomic, prevValue);
+         ASSERT_EQ(++atomic, TypeParam(value));
+      }
+
+      if (!needToPreventOverflow) {
+         ASSERT_EQ(atomic++, TypeParam(value));
+         ASSERT_EQ(atomic--, nextValue);
+      }
+
+      if (!needToPreventUnderlow) {
+         ASSERT_EQ(atomic--, TypeParam(value));
+         ASSERT_EQ(atomic++, prevValue);
+      }
+   }
+}
