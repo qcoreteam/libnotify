@@ -46,103 +46,60 @@
 #  error "AtomicInteger for 64-bit types must be supported on 64-bit builds!"
 #endif
 
-#define NOTIFY_TARGET_TEST_TYPES int, uint, long, ulong, n_ptrdiff, n_uintptr
-
-#if (defined(__SIZEOF_WCHAR_T__) && (__SIZEOF_WCHAR_T__-0) > 2) \
-    || (defined(WCHAR_MAX) && (WCHAR_MAX-0 > 0x10000))
-#  define TYPE_SUPPORTED_wchar_t       1
-#endif
 #ifdef NOTIFY_COMPILER_UNICODE_STRINGS
-#  define TYPE_SUPPORTED_char32_t      1
-#endif
-
-
-#ifdef NOTIFY_ATOMIC_INT16_IS_SUPPORTED
-#  define TYPE_SUPPORTED_short         1
-#  define TYPE_SUPPORTED_ushort        1
-#  ifdef NOTIFY_COMPILER_UNICODE_STRINGS
-#     define TYPE_SUPPORTED_char16_t   1
-#  endif
-#  ifndef TYPE_SUPPORTED_wchar_t
-#     define TYPE_SUPPORTED_wchar_t    1
-#  endif
-#endif
-
-#  define NOTIFY_ATOMIC_TYPE_SUPPORTED2(type)     TYPE_SUPPORTED_ ## type
-#  define NOTIFY_ATOMIC_TYPE_SUPPORTED(type)      NOTIFY_ATOMIC_TYPE_SUPPORTED2(type)
-
-#ifdef NOTIFY_ATOMIC_INT64_IS_SUPPORTED
-#  define TYPE_SUPPORTED_ulonglong     1
-#  define TYPE_SUPPORTED_n_longlong    1
-#endif
-
-#if NOTIFY_ATOMIC_TYPE_SUPPORTED(NOTIFY_ATOMIC_TEST_TYPE)
-#  define TEST_TYPE NOTIFY_ATOMIC_TEST_TYPE
-#else
-#  define TEST_TYPE int
-#  define NOTIFY_TEST_NOT_SUPPORTED
+#  define NOTIFY_ATOMIC_UNICODE32_TEST_TYPES char32_t
 #endif
 
 namespace
 {
 
 typedef signed char schar;
-typedef TEST_TYPE Type;
-typedef Type T; // shorthand
 
-enum
-{
-   TypeIsUnsiged = Type(-1) > Type(1),
-   TypeIsSigned = !TypeIsUnsiged
-};
+#define NOTIFY_ATOMIC_BASIC_TEST_TYPES int, uint, long, ulong, n_ptrdiff, n_uintptr
 
-template <bool> struct LargeIntTemplate;
-template <>
-struct LargeIntTemplate<true>
-{
-   typedef n_uint64 Type;
-};
+#ifdef NOTIFY_ATOMIC_INT8_IS_SUPPORTED
+#define NOTIFY_ATOMIC_INT8_TEST_TYPES char, uchar, schar
+#endif
 
-template <>
-struct LargeIntTemplate<false>
-{
-   typedef n_int64 Type;
-};
+#ifdef NOTIFY_ATOMIC_INT16_IS_SUPPORTED
+#  define NOTIFY_ATOMIC_INT16_TEST_TYPES short, ushort, wchar_t
+#  ifdef NOTIFY_COMPILER_UNICODE_STRINGS
+#     define NOTIFY_ATOMIC_UNICODE16_TEST_TYPES char16_t
+#  endif
+#endif
 
-typedef LargeIntTemplate<TypeIsUnsiged>::Type LargeInt;
+#ifdef NOTIFY_ATOMIC_INT64_IS_SUPPORTED
+#  define NOTIFY_ATOMIC_INT64_TEST_TYPES n_longlong, n_ulonglong
+#endif
+
 template <typename T>
 class AtomicIntegerTest : public ::testing::Test
 {
 };
 
 typedef ::testing::Types<
-      int,
-      uint,
-      long,
-      ulong,
-      n_ptrdiff,
-      n_uintptr> AtomicDefaultValueTypes;
-TYPED_TEST_CASE(AtomicIntegerTest, AtomicDefaultValueTypes);
-
-#ifdef NOTIFY_ATOMIC_INT8_IS_SUPPORTED
-template <typename T>
-class AtomicIntegerInt8Test : public ::testing::Test
-{
-};
-typedef ::testing::Types<char, uchar, schar> AtomicInt8ValueTypes;
-TYPED_TEST_CASE(AtomicIntegerInt8Test, AtomicInt8ValueTypes);
+      NOTIFY_ATOMIC_BASIC_TEST_TYPES
+#ifdef NOTIFY_ATOMIC_INT8_TEST_TYPES
+      ,NOTIFY_ATOMIC_INT8_TEST_TYPES
 #endif
+#ifdef NOTIFY_ATOMIC_INT16_TEST_TYPES
+      ,NOTIFY_ATOMIC_INT16_TEST_TYPES
+#endif
+#ifdef NOTIFY_ATOMIC_UNICODE16_TEST_TYPES
+      ,NOTIFY_ATOMIC_UNICODE16_TEST_TYPES
+#endif
+#ifdef NOTIFY_ATOMIC_UNICODE32_TEST_TYPES
+      ,NOTIFY_ATOMIC_UNICODE32_TEST_TYPES
+#endif
+#ifdef NOTIFY_ATOMIC_INT64_TEST_TYPES
+      ,NOTIFY_ATOMIC_INT64_TEST_TYPES
+#endif
+      > AtomicValueTypes;
+TYPED_TEST_CASE(AtomicIntegerTest, AtomicValueTypes);
 
-}
-
-template <typename TypeParam>
-void static_checks(TypeParam &)
-{
-   //NOTIFY_STATIC_ASSERT(sizeof(notify::AtomicInteger<TypeParam>) == sizeof(TypeParam));
 }
 
 TYPED_TEST(AtomicIntegerTest, staticChecks)
 {
-   static_checks(*this, TypeParam());
-
+   NOTIFY_STATIC_ASSERT(sizeof(notify::AtomicInteger<TypeParam>) == sizeof(TypeParam));
 }
