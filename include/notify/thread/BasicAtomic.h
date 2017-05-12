@@ -132,22 +132,22 @@ public:
 
    bool testAndSetRelaxed(T expectedValue, T newValue, T &currentValue) NOTIFY_DECL_NOEXCEPT
    {
-      return OpsCls::testAndSetRelaxed(m_atomicValue, expectedValue, newValue, currentValue);
+      return OpsCls::testAndSetRelaxed(m_atomicValue, expectedValue, newValue, &currentValue);
    }
 
    bool testAndSetAcquire(T expectedValue, T newValue, T &currentValue) NOTIFY_DECL_NOEXCEPT
    {
-      return OpsCls::testAndSetAcquire(m_atomicValue, expectedValue, newValue, currentValue);
+      return OpsCls::testAndSetAcquire(m_atomicValue, expectedValue, newValue, &currentValue);
    }
 
    bool testAndSetRelease(T expectedValue, T newValue, T &currentValue) NOTIFY_DECL_NOEXCEPT
    {
-      return OpsCls::testAndSetRelease(m_atomicValue, expectedValue, newValue, currentValue);
+      return OpsCls::testAndSetRelease(m_atomicValue, expectedValue, newValue, &currentValue);
    }
 
    bool testAndSetOrdered(T expectedValue, T newValue, T &currentValue) NOTIFY_DECL_NOEXCEPT
    {
-      return OpsCls::testAndSetOrdered(m_atomicValue, expectedValue, newValue, currentValue);
+      return OpsCls::testAndSetOrdered(m_atomicValue, expectedValue, newValue, &currentValue);
    }
 
    static bool isFetchAndStoreNative() NOTIFY_DECL_NOEXCEPT
@@ -312,7 +312,7 @@ public:
 
    T operator+=(T v) NOTIFY_DECL_NOEXCEPT
    {
-      return fetchAndSubOrdered(v) + v;
+      return fetchAndAddOrdered(v) + v;
    }
 
    T operator-=(T v) NOTIFY_DECL_NOEXCEPT
@@ -422,28 +422,28 @@ public:
                           AtomicType newValue,
                           AtomicType &currentValue) NOTIFY_DECL_NOEXCEPT
    {
-      return OpsCls::testAndSetRelaxed(m_atomicValue, expectedValue, newValue, currentValue);
+      return OpsCls::testAndSetRelaxed(m_atomicValue, expectedValue, newValue, &currentValue);
    }
 
    bool testAndSetAcquire(AtomicType expectedValue,
                           AtomicType newValue,
                           AtomicType &currentValue) NOTIFY_DECL_NOEXCEPT
    {
-      return OpsCls::testAndSetAcquire(m_atomicValue, expectedValue, newValue, currentValue);
+      return OpsCls::testAndSetAcquire(m_atomicValue, expectedValue, newValue, &currentValue);
    }
 
    bool testAndSetRelease(AtomicType expectedValue,
                           AtomicType newValue,
                           AtomicType &currentValue) NOTIFY_DECL_NOEXCEPT
    {
-      return OpsCls::testAndSetRelease(m_atomicValue, expectedValue, newValue, currentValue);
+      return OpsCls::testAndSetRelease(m_atomicValue, expectedValue, newValue, &currentValue);
    }
 
    bool testAndSetOrdered(AtomicType expectedValue,
                           AtomicType newValue,
                           AtomicType &currentValue) NOTIFY_DECL_NOEXCEPT
    {
-      return OpsCls::testAndSetOrdered(m_atomicValue, expectedValue, newValue, currentValue);
+      return OpsCls::testAndSetOrdered(m_atomicValue, expectedValue, newValue, &currentValue);
    }
 
    static bool isFetchAndStoreNative() NOTIFY_DECL_NOEXCEPT

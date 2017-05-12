@@ -315,3 +315,424 @@ TYPED_TEST(AtomicIntegerTest, refDeref)
       }
    }
 }
+
+TYPED_TEST(AtomicIntegerTest, testAndSet)
+{
+   for (const TypeParam &value : this->m_backendValues)
+   {
+      TypeParam newValue = ~TypeParam(value);
+      notify::AtomicInteger<TypeParam> atomic(value);
+
+      ASSERT_TRUE(atomic.testAndSetRelaxed(value, newValue));
+      ASSERT_EQ(atomic.load(), newValue);
+      ASSERT_TRUE(!atomic.testAndSetRelaxed(value, newValue));
+      ASSERT_TRUE(atomic.testAndSetRelaxed(newValue, value));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+
+      ASSERT_TRUE(atomic.testAndSetAcquire(value, newValue));
+      ASSERT_EQ(atomic.load(), newValue);
+      ASSERT_TRUE(!atomic.testAndSetAcquire(value, newValue));
+      ASSERT_TRUE(atomic.testAndSetAcquire(newValue, value));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+
+      ASSERT_TRUE(atomic.testAndSetRelease(value, newValue));
+      ASSERT_EQ(atomic.loadAcquire(), newValue);
+      ASSERT_TRUE(!atomic.testAndSetRelease(value, newValue));
+      ASSERT_TRUE(atomic.testAndSetRelease(newValue, value));
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+
+      ASSERT_TRUE(atomic.testAndSetOrdered(value, newValue));
+      ASSERT_EQ(atomic.loadAcquire(), newValue);
+      ASSERT_TRUE(!atomic.testAndSetOrdered(value, newValue));
+      ASSERT_TRUE(atomic.testAndSetOrdered(newValue, value));
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+   }
+}
+
+TYPED_TEST(AtomicIntegerTest, testAndSet3)
+{
+   for (const TypeParam &value : this->m_backendValues)
+   {
+      TypeParam newValue = ~TypeParam(value);
+      TypeParam oldValue;
+      notify::AtomicInteger<TypeParam> atomic(value);
+
+      ASSERT_TRUE(atomic.testAndSetRelaxed(value, newValue, oldValue));
+      ASSERT_EQ(atomic.load(), newValue);
+      ASSERT_TRUE(!atomic.testAndSetRelaxed(value, newValue, oldValue));
+      ASSERT_EQ(oldValue, newValue);
+      ASSERT_TRUE(atomic.testAndSetRelaxed(newValue, value, oldValue));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      ASSERT_EQ(oldValue, newValue);
+
+      ASSERT_TRUE(atomic.testAndSetAcquire(value, newValue, oldValue));
+      ASSERT_EQ(atomic.load(), newValue);
+      ASSERT_TRUE(!atomic.testAndSetAcquire(value, newValue, oldValue));
+      ASSERT_EQ(oldValue, newValue);
+      ASSERT_TRUE(atomic.testAndSetAcquire(newValue, value, oldValue));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      ASSERT_EQ(oldValue, newValue);
+
+      ASSERT_TRUE(atomic.testAndSetRelease(value, newValue, oldValue));
+      ASSERT_EQ(atomic.loadAcquire(), newValue);
+      ASSERT_TRUE(!atomic.testAndSetRelease(value, newValue, oldValue));
+      ASSERT_EQ(oldValue, newValue);
+      ASSERT_TRUE(atomic.testAndSetRelease(newValue, value, oldValue));
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+      ASSERT_EQ(oldValue, newValue);
+
+      ASSERT_TRUE(atomic.testAndSetOrdered(value, newValue, oldValue));
+      ASSERT_EQ(atomic.loadAcquire(), newValue);
+      ASSERT_TRUE(!atomic.testAndSetOrdered(value, newValue, oldValue));
+      ASSERT_EQ(oldValue, newValue);
+      ASSERT_TRUE(atomic.testAndSetOrdered(newValue, value, oldValue));
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+      ASSERT_EQ(oldValue, newValue);
+   }
+}
+
+TYPED_TEST(AtomicIntegerTest, fetchAndStore)
+{
+   for (const TypeParam &value : this->m_backendValues) {
+      TypeParam newValue = ~TypeParam(value);
+      TypeParam oldValue;
+      notify::AtomicInteger<TypeParam> atomic(value);
+
+      ASSERT_EQ(atomic.fetchAndStoreRelaxed(newValue), value);
+      ASSERT_EQ(atomic.load(), newValue);
+      ASSERT_EQ(atomic.fetchAndStoreRelaxed(value), newValue);
+      ASSERT_EQ(atomic.load(), value);
+
+      ASSERT_EQ(atomic.fetchAndStoreAcquire(newValue), value);
+      ASSERT_EQ(atomic.load(), newValue);
+      ASSERT_EQ(atomic.fetchAndStoreAcquire(value), newValue);
+      ASSERT_EQ(atomic.load(), value);
+
+      ASSERT_EQ(atomic.fetchAndStoreRelease(newValue), value);
+      ASSERT_EQ(atomic.loadAcquire(), newValue);
+      ASSERT_EQ(atomic.fetchAndStoreRelease(value), newValue);
+      ASSERT_EQ(atomic.loadAcquire(), value);
+
+      ASSERT_EQ(atomic.fetchAndStoreOrdered(newValue), value);
+      ASSERT_EQ(atomic.loadAcquire(), newValue);
+      ASSERT_EQ(atomic.fetchAndStoreOrdered(value), newValue);
+      ASSERT_EQ(atomic.loadAcquire(), value);
+   }
+}
+
+TYPED_TEST(AtomicIntegerTest, fetchAndAdd)
+{
+   for (const TypeParam &value : this->m_backendValues) {
+      notify::AtomicInteger<TypeParam> atomic(value);
+      TypeParam parcel1 = 43;
+      TypeParam parcel2 = TypeParam(0 - parcel1);
+      const bool needToPreventOverflow =
+            AtomicIntegerTest<TypeParam>::TypeIsSigned && value > std::numeric_limits<TypeParam>::max() + parcel2;
+      const bool needToPreventUnderflow =
+            AtomicIntegerTest<TypeParam>::TypeIsSigned && value < std::numeric_limits<TypeParam>::min() + parcel1;
+      TypeParam newValue1 = TypeParam(value);
+      if (!needToPreventOverflow) {
+         newValue1 += parcel1;
+      }
+      TypeParam newValue2 = TypeParam(value);
+      if (!needToPreventUnderflow) {
+         newValue2 += parcel2;
+      }
+      if (!needToPreventOverflow) {
+         ASSERT_EQ(atomic.fetchAndAddRelaxed(parcel1), value);
+         ASSERT_EQ(atomic.load(), newValue1);
+         ASSERT_EQ(atomic.fetchAndAddRelaxed(parcel2), newValue1);
+      }
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+
+      if (!needToPreventUnderflow) {
+         ASSERT_EQ(atomic.fetchAndAddRelaxed(parcel2), value);
+         ASSERT_EQ(atomic.load(), newValue2);
+         ASSERT_EQ(atomic.fetchAndAddRelaxed(parcel1), newValue2);
+      }
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+
+      if (!needToPreventOverflow) {
+         ASSERT_EQ(atomic.fetchAndAddAcquire(parcel1), value);
+         ASSERT_EQ(atomic.load(), newValue1);
+         ASSERT_EQ(atomic.fetchAndAddAcquire(parcel2), newValue1);
+      }
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+
+      if (!needToPreventUnderflow) {
+         ASSERT_EQ(atomic.fetchAndAddAcquire(parcel2), value);
+         ASSERT_EQ(atomic.load(), newValue2);
+         ASSERT_EQ(atomic.fetchAndAddAcquire(parcel1), newValue2);
+      }
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+
+      if (!needToPreventOverflow) {
+         ASSERT_EQ(atomic.fetchAndAddRelease(parcel1), value);
+         ASSERT_EQ(atomic.loadAcquire(), newValue1);
+         ASSERT_EQ(atomic.fetchAndAddRelease(parcel2), newValue1);
+      }
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+
+      if (!needToPreventUnderflow) {
+         ASSERT_EQ(atomic.fetchAndAddRelease(parcel2), value);
+         ASSERT_EQ(atomic.loadAcquire(), newValue2);
+         ASSERT_EQ(atomic.fetchAndAddRelease(parcel1), newValue2);
+      }
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+
+      if (!needToPreventOverflow) {
+         ASSERT_EQ(atomic.fetchAndAddOrdered(parcel1), value);
+         ASSERT_EQ(atomic.loadAcquire(), newValue1);
+         ASSERT_EQ(atomic.fetchAndAddOrdered(parcel2), newValue1);
+      }
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+
+      if (!needToPreventUnderflow) {
+         ASSERT_EQ(atomic.fetchAndAddOrdered(parcel2), value);
+         ASSERT_EQ(atomic.loadAcquire(), newValue2);
+         ASSERT_EQ(atomic.fetchAndAddOrdered(parcel1), newValue2);
+      }
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+
+      if (!needToPreventOverflow) {
+         ASSERT_EQ(atomic += parcel1, newValue1);
+         ASSERT_EQ(atomic += parcel2, TypeParam(value));
+      }
+
+      if (!needToPreventUnderflow) {
+         ASSERT_EQ(atomic += parcel2, newValue2);
+         ASSERT_EQ(atomic += parcel1, TypeParam(value));
+      }
+   }
+}
+
+TYPED_TEST(AtomicIntegerTest, fetchAndSub)
+{
+   for (const TypeParam &value : this->m_backendValues) {
+      notify::AtomicInteger<TypeParam> atomic(value);
+      TypeParam parcel1 = 43;
+      TypeParam parcel2 = TypeParam(0 - parcel1);
+      const bool needToPreventOverflow =
+            AtomicIntegerTest<TypeParam>::TypeIsSigned && value > std::numeric_limits<TypeParam>::max() - parcel1;
+      const bool needToPreventUnderflow =
+            AtomicIntegerTest<TypeParam>::TypeIsSigned && value < std::numeric_limits<TypeParam>::min() - parcel2;
+      TypeParam newValue1 = TypeParam(value);
+      if (!needToPreventUnderflow) {
+         newValue1 -= parcel1;
+      }
+      TypeParam newValue2 = TypeParam(value);
+      if (!needToPreventOverflow) {
+         newValue2 -= parcel2;
+      }
+      if (!needToPreventUnderflow) {
+         ASSERT_EQ(atomic.fetchAndSubRelaxed(parcel1), TypeParam(value));
+         ASSERT_EQ(atomic.load(), newValue1);
+         ASSERT_EQ(atomic.fetchAndSubRelaxed(parcel2), newValue1);
+      }
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      if (!needToPreventOverflow) {
+         ASSERT_EQ(atomic.fetchAndSubRelaxed(parcel2), TypeParam(value));
+         ASSERT_EQ(atomic.load(), newValue2);
+         ASSERT_EQ(atomic.fetchAndSubRelaxed(parcel1), newValue2);
+      }
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+
+      if (!needToPreventUnderflow) {
+         ASSERT_EQ(atomic.fetchAndSubAcquire(parcel1), TypeParam(value));
+         ASSERT_EQ(atomic.load(), newValue1);
+         ASSERT_EQ(atomic.fetchAndSubAcquire(parcel2), newValue1);
+      }
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      if (!needToPreventOverflow) {
+         ASSERT_EQ(atomic.fetchAndSubAcquire(parcel2), TypeParam(value));
+         ASSERT_EQ(atomic.load(), newValue2);
+         ASSERT_EQ(atomic.fetchAndSubAcquire(parcel1), newValue2);
+      }
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+
+      if (!needToPreventUnderflow) {
+         ASSERT_EQ(atomic.fetchAndSubRelease(parcel1), TypeParam(value));
+         ASSERT_EQ(atomic.loadAcquire(), newValue1);
+         ASSERT_EQ(atomic.fetchAndSubRelease(parcel2), newValue1);
+      }
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+      if (!needToPreventOverflow) {
+         ASSERT_EQ(atomic.fetchAndSubRelease(parcel2), TypeParam(value));
+         ASSERT_EQ(atomic.loadAcquire(), newValue2);
+         ASSERT_EQ(atomic.fetchAndSubRelease(parcel1), newValue2);
+      }
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+
+      if (!needToPreventUnderflow) {
+         ASSERT_EQ(atomic.fetchAndSubOrdered(parcel1), TypeParam(value));
+         ASSERT_EQ(atomic.loadAcquire(), newValue1);
+         ASSERT_EQ(atomic.fetchAndSubOrdered(parcel2), newValue1);
+      }
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+      if (!needToPreventOverflow) {
+         ASSERT_EQ(atomic.fetchAndSubOrdered(parcel2), TypeParam(value));
+         ASSERT_EQ(atomic.loadAcquire(), newValue2);
+         ASSERT_EQ(atomic.fetchAndSubOrdered(parcel1), newValue2);
+      }
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+
+      if (!needToPreventUnderflow) {
+         ASSERT_EQ(atomic -= parcel1, newValue1);
+         ASSERT_EQ(atomic -= parcel2, TypeParam(value));
+      }
+
+      if (!needToPreventOverflow) {
+         ASSERT_EQ(atomic -= parcel2, newValue2);
+         ASSERT_EQ(atomic -= parcel1, TypeParam(value));
+      }
+   }
+}
+
+TYPED_TEST(AtomicIntegerTest, fetchAndOr)
+{
+   for (const TypeParam &value : this->m_backendValues) {
+      notify::AtomicInteger<TypeParam> atomic(value);
+      TypeParam zero = 0;
+      TypeParam one = 1;
+      TypeParam minusOne = TypeParam(~0);
+
+      ASSERT_EQ(atomic.fetchAndOrRelaxed(zero), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndOrRelaxed(one), TypeParam(value));
+      ASSERT_EQ(atomic.load(), (value | one));
+      ASSERT_EQ(atomic.fetchAndOrRelaxed(minusOne), (value | one));
+      ASSERT_EQ(atomic.load(), minusOne);
+
+      atomic.store(value);
+      ASSERT_EQ(atomic.fetchAndOrAcquire(zero), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndOrAcquire(one), TypeParam(value));
+      ASSERT_EQ(atomic.load(), (value | one));
+      ASSERT_EQ(atomic.fetchAndOrAcquire(minusOne), (value | one));
+      ASSERT_EQ(atomic.load(), minusOne);
+
+      atomic.store(value);
+      ASSERT_EQ(atomic.fetchAndOrRelease(zero), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndOrAcquire(one), TypeParam(value));
+      ASSERT_EQ(atomic.load(), (value | one));
+      ASSERT_EQ(atomic.fetchAndOrRelease(minusOne), (value | one));
+      ASSERT_EQ(atomic.load(), minusOne);
+
+      atomic.store(value);
+      ASSERT_EQ(atomic.fetchAndOrOrdered(zero), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndOrAcquire(one), TypeParam(value));
+      ASSERT_EQ(atomic.load(), (value | one));
+      ASSERT_EQ(atomic.fetchAndOrOrdered(minusOne), (value | one));
+      ASSERT_EQ(atomic.load(), minusOne);
+
+      atomic.store(value);
+      ASSERT_EQ(atomic |= zero, TypeParam(value));
+      ASSERT_EQ(atomic |= one, TypeParam(value | one));
+      ASSERT_EQ(atomic |= minusOne, minusOne);
+   }
+}
+
+TYPED_TEST(AtomicIntegerTest, fetchAndAnd)
+{
+   for (const TypeParam &value : this->m_backendValues) {
+      notify::AtomicInteger<TypeParam> atomic(value);
+      TypeParam zero = 0;
+      TypeParam one = 0x1;
+      TypeParam minusOne = TypeParam(~0);
+
+      ASSERT_EQ(atomic.fetchAndAndRelaxed(minusOne), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndAndRelaxed(one), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(value & one));
+      ASSERT_EQ(atomic.fetchAndAndRelaxed(zero), TypeParam(value & one));
+      ASSERT_EQ(atomic.load(), zero);
+
+      atomic.store(value);
+      ASSERT_EQ(atomic.fetchAndAndAcquire(minusOne), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndAndAcquire(one), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(value & one));
+      ASSERT_EQ(atomic.fetchAndAndAcquire(zero), TypeParam(value & one));
+      ASSERT_EQ(atomic.load(), zero);
+
+      atomic.store(value);
+      ASSERT_EQ(atomic.fetchAndAndRelease(minusOne), TypeParam(value));
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndAndRelease(one), TypeParam(value));
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value & one));
+      ASSERT_EQ(atomic.fetchAndAndRelease(zero), TypeParam(value & one));
+      ASSERT_EQ(atomic.loadAcquire(), zero);
+
+      atomic.store(value);
+      ASSERT_EQ(atomic.fetchAndAndOrdered(minusOne), TypeParam(value));
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndAndOrdered(one), TypeParam(value));
+      ASSERT_EQ(atomic.loadAcquire(), TypeParam(value & one));
+      ASSERT_EQ(atomic.fetchAndAndOrdered(zero), TypeParam(value & one));
+      ASSERT_EQ(atomic.loadAcquire(), zero);
+
+      atomic.store(value);
+      ASSERT_EQ(atomic &= minusOne, TypeParam(value));
+      ASSERT_EQ(atomic &= one, TypeParam(value & one));
+      ASSERT_EQ(atomic &= zero, zero);
+   }
+}
+
+
+TYPED_TEST(AtomicIntegerTest, fetchAndXor)
+{
+   for (const TypeParam &value : this->m_backendValues) {
+      notify::AtomicInteger<TypeParam> atomic(value);
+      TypeParam zero = 0;
+      TypeParam pattern(TypeParam(N_INT64_C(0xcccccccccccccccc)));
+      TypeParam minusOne = TypeParam(~0);
+
+      ASSERT_EQ(atomic.fetchAndXorRelaxed(zero), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndXorRelaxed(pattern), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(value ^ pattern));
+      ASSERT_EQ(atomic.fetchAndXorRelaxed(pattern), TypeParam(value ^ pattern));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndXorRelaxed(minusOne), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(~value));
+      ASSERT_EQ(atomic.fetchAndXorRelaxed(minusOne), TypeParam(~value));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+
+      ASSERT_EQ(atomic.fetchAndXorAcquire(zero), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndXorAcquire(pattern), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(value ^ pattern));
+      ASSERT_EQ(atomic.fetchAndXorAcquire(pattern), TypeParam(value ^ pattern));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndXorAcquire(minusOne), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(~value));
+      ASSERT_EQ(atomic.fetchAndXorAcquire(minusOne), TypeParam(~value));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+
+      ASSERT_EQ(atomic.fetchAndXorRelease(zero), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndXorRelease(pattern), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(value ^ pattern));
+      ASSERT_EQ(atomic.fetchAndXorRelease(pattern), TypeParam(value ^ pattern));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndXorRelease(minusOne), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(~value));
+      ASSERT_EQ(atomic.fetchAndXorRelease(minusOne), TypeParam(~value));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+
+      ASSERT_EQ(atomic.fetchAndXorOrdered(zero), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndXorOrdered(pattern), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(value ^ pattern));
+      ASSERT_EQ(atomic.fetchAndXorOrdered(pattern), TypeParam(value ^ pattern));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+      ASSERT_EQ(atomic.fetchAndXorOrdered(minusOne), TypeParam(value));
+      ASSERT_EQ(atomic.load(), TypeParam(~value));
+      ASSERT_EQ(atomic.fetchAndXorOrdered(minusOne), TypeParam(~value));
+      ASSERT_EQ(atomic.load(), TypeParam(value));
+
+      ASSERT_EQ(atomic ^= zero, TypeParam(value));
+      ASSERT_EQ(atomic ^= pattern, TypeParam(value ^ pattern));
+      ASSERT_EQ(atomic ^= pattern, TypeParam(value));
+      ASSERT_EQ(atomic ^= minusOne, TypeParam(~value));
+      ASSERT_EQ(atomic ^= minusOne, TypeParam(value));
+   }
+}
