@@ -4,5 +4,6 @@ set(TEST_SRCS
     EventMgrTest.cpp
     FlagsTest.cpp
     VersionTest.cpp
-    thread/AtomicIntegerTest.cpp)
+    thread/AtomicIntegerTest.cpp
+    thread/AtomicIntTest.cpp)
 notify_add_unittest(UnitTests KernelTest ${TEST_SRCS})
