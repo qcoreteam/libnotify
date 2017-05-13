@@ -20,6 +20,7 @@
 #include <vector>
 #include <utility>
 #include <array>
+#include <tuple>
 
 namespace
 {
@@ -75,17 +76,18 @@ static void warning_free_helper_template()
    i.fetchAndStoreOrdered(newValue);
    assembly_marker<54>(&i);
 
-   i.fetchAndStoreRelaxed(newValue);
+   i.fetchAndAddRelaxed(valueToAdd);
    assembly_marker<61>(&i);
-   i.fetchAndStoreAcquire(newValue);
+   i.fetchAndAddAcquire(valueToAdd);
    assembly_marker<62>(&i);
-   i.fetchAndStoreRelease(newValue);
+   i.fetchAndAddRelease(valueToAdd);
    assembly_marker<63>(&i);
-   i.fetchAndStoreOrdered(newValue);
+   i.fetchAndAddOrdered(valueToAdd);
    assembly_marker<64>(&i);
 };
 typedef std::array<int, 3> Array3;
-
+typedef std::tuple<int, int, int, bool> TestAndSetItemType;
+typedef std::array<int, 2> Array2;
 class AtomicIntTest : public ::testing::Test
 {
 public:
@@ -95,6 +97,9 @@ protected:
    static std::vector<std::pair<int, int>> m_assignOperatorValues;
    static std::vector<Array3> m_refValues;
    static std::vector<Array3> m_derefValues;
+   static std::vector<TestAndSetItemType> m_testAndSetValues;
+   static std::vector<Array2> m_fetchAndStoreValues;
+   static std::vector<Array2> m_fetchAndAddValues;
 };
 
 void AtomicIntTest::SetUpTestCase()
@@ -120,6 +125,92 @@ std::vector<Array3> AtomicIntTest::m_derefValues = {
       {0, 1, -1},
       {1, 0, 0},
       {2, 1, 1}
+};
+
+std::vector<TestAndSetItemType> AtomicIntTest::m_testAndSetValues = {
+      std::make_tuple(0, 0, 0, true),
+      std::make_tuple(0, 0, 1, true),
+      std::make_tuple(0, 0, -1, true),
+      std::make_tuple(1, 1, 0, true),
+      std::make_tuple(1, 1, 1, true),
+      std::make_tuple(1, 1, -1, true),
+      std::make_tuple(-1, -1, 0, true),
+      std::make_tuple(-1, -1, 1, true),
+      std::make_tuple(-1, -1, -1, true),
+      std::make_tuple(INT_MIN + 1, INT_MIN + 1, INT_MIN + 1, true),
+      std::make_tuple(INT_MIN + 1, INT_MIN + 1, 1, true),
+      std::make_tuple(INT_MIN + 1, INT_MIN + 1, -1, true),
+      std::make_tuple(INT_MAX, INT_MAX, INT_MAX, true),
+      std::make_tuple(INT_MAX, INT_MAX, 1, true),
+      std::make_tuple(INT_MAX, INT_MAX, -1, true),
+
+      // fail situations
+      std::make_tuple(0, 1, ~0, false),
+      std::make_tuple(0, -1, ~0, false),
+      std::make_tuple(1, 0, ~0, false),
+      std::make_tuple(-1, 0, ~0, false),
+      std::make_tuple(1, -1, ~0, false),
+      std::make_tuple(-1, 1, ~0, false),
+      std::make_tuple(INT_MIN+1, INT_MAX, ~0, false),
+      std::make_tuple(INT_MAX, INT_MIN + 1, ~0, false)
+};
+
+std::vector<Array2> AtomicIntTest::m_fetchAndStoreValues = {
+      {0, 1},
+      {1, 2},
+      {3, 8}
+};
+
+std::vector<Array2> AtomicIntTest::m_fetchAndAddValues = {
+      {0, 1},
+      {1, 0},
+      {1, 2},
+      {2, 1},
+      {10, 21},
+      {31, 40},
+      {51, 62},
+      {72, 81},
+      {810, 721},
+      {631, 540},
+      {451, 362},
+      {272, 181},
+      {1810, 8721},
+      {3631, 6540},
+      {5451, 4362},
+      {7272, 2181},
+
+      {0, -1},
+      {1, 0},
+      {1, -2},
+      {2, -1},
+      {10, -21},
+      {31, -40},
+      {51, -62},
+      {72, -81},
+      {810, -721},
+      {631, -540},
+      {451, -362},
+      {272, -181},
+      {1810, -8721},
+      {3631, -6540},
+      {5451, -4362},
+      {7272, -2181},
+
+      {0, 1},
+      {-1, 0},
+      {-2, 1},
+      {-10, 21},
+      {-31, 40},
+      {-51, 62},
+      {-72, 81},
+      {-810, 721},
+      {-631, 540},
+      {-451, 362},
+      {-272, 181},
+      {-1810, 8721},
+      {-3631, 6540},
+      {-5451, 4362},
+      {-7272, 2181}
 };
 
 void warning_free_helper()
@@ -226,7 +317,7 @@ TEST_F(AtomicIntTest, copyonstructor)
       AtomicInt atomic4(atomic2);
       ASSERT_EQ(atomic4.load(), value);
       AtomicInt atomic5 = atomic2;
-      ASSERT_EQ(atomic4.load(), value);
+      ASSERT_EQ(atomic5.load(), value);
    }
 }
 
@@ -306,7 +397,7 @@ TEST_F(AtomicIntTest, ref)
 TEST_F(AtomicIntTest, deref)
 {
    using notify::AtomicInt;
-   for (const Array3 &item : this->m_refValues)
+   for (const Array3 &item : this->m_derefValues)
    {
       int value = item[0];
       int result = item[1];
@@ -343,3 +434,300 @@ TEST_F(AtomicIntTest, isTestAndSetNative)
 #endif
 }
 
+TEST_F(AtomicIntTest, isTestAndSetWaitFree)
+{
+   using notify::AtomicInt;
+#if defined(NOTIFY_ATOMIC_INT_TEST_AND_SET_IS_WAIT_FREE)
+   ASSERT_TREUE(AtomicInt::isTestAndSetWaitFree());
+   ASSERT_TREUE(AtomicInt::isTestAndSetNative());
+#  if defined(NOTIFY_ATOMIC_INT_TEST_AND_SET_IS_NOT_NATIVE)
+#    error "Reference counting cannot be wait-free and unsupported at the same time!"
+#  endif
+#else
+   ASSERT_TRUE(!AtomicInt::isTestAndSetWaitFree());
+#endif
+}
+
+TEST_F(AtomicIntTest, testAndSet)
+{
+   using notify::AtomicInt;
+   for (const TestAndSetItemType &item : this->m_testAndSetValues)
+   {
+      int value = std::get<0>(item);
+      int expected = std::get<1>(item);
+      int newval = std::get<2>(item);
+      bool result = std::get<3>(item);
+      {
+         AtomicInt atomic = value;
+         ASSERT_EQ(atomic.testAndSetRelaxed(expected, newval), result);
+      }
+      {
+         AtomicInt atomic = value;
+         ASSERT_EQ(atomic.testAndSetAcquire(expected, newval), result);
+      }
+      {
+         AtomicInt atomic = value;
+         ASSERT_EQ(atomic.testAndSetRelease(expected, newval), result);
+      }
+      {
+         AtomicInt atomic = value;
+         ASSERT_EQ(atomic.testAndSetOrdered(expected, newval), result);
+      }
+#ifdef NOTIFY_ATOMIC_INT32_IS_SUPPORTED
+      {
+         AtomicInt atomic = value;
+         int currentVal = 0xdeadbeef;
+         ASSERT_EQ(atomic.testAndSetRelaxed(expected, newval, currentVal), result);
+         if (!result) {
+            ASSERT_EQ(currentVal, value);
+         }
+      };
+
+      {
+         AtomicInt atomic = value;
+         int currentVal = 0xdeadbeef;
+         ASSERT_EQ(atomic.testAndSetAcquire(expected, newval, currentVal), result);
+         if (!result) {
+            ASSERT_EQ(currentVal, value);
+         }
+      }
+
+      {
+         AtomicInt atomic = value;
+         int currentVal = 0xdeadbeef;
+         ASSERT_EQ(atomic.testAndSetRelease(expected, newval, currentVal), result);
+         if (!result) {
+            ASSERT_EQ(currentVal, value);
+         }
+      }
+
+      {
+         AtomicInt atomic = value;
+         int currentVal = 0xdeadbeef;
+         ASSERT_EQ(atomic.testAndSetOrdered(expected, newval, currentVal), result);
+         if (!result) {
+            ASSERT_EQ(currentVal, value);
+         }
+      }
+
+#endif
+   }
+}
+
+TEST_F(AtomicIntTest, isFetchAndStoreNative)
+{
+   using notify::AtomicInt;
+#if defined(NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_ALWAYS_NATIVE)
+   ASSERT_TRUE(AtomicInt::isFetchAndStoreNative());
+#  if (defined(NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_SOMETIMES_NATIVE) \
+   || (defined(NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_NOT_NATIVE)))
+#     error "Define only one of NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_{ALWAYS,SOMTIMES,NOT}_NATIVE"
+#  endif
+#elif defined(NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_SOMETIMES_NATIVE)
+   ASSERT_TRUE(AtomicInt::isFetchAndStoreNative() || !AtomicInt::isFetchAndStoreNative());
+#  if (defined(NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_ALWAYS_NATIVE) \
+   || (defined(NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_NOT_NATIVE)))
+#     error "Define only one of NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_{ALWAYS,SOMTIMES,NOT}_NATIVE"
+#  endif
+#elif defined(NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_NOT_NATIVE)
+   ASSERT_FALSE(AtomicInt::isFetchAndStoreNative());
+#  if (defined(NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_ALWAYS_NATIVE) \
+   || (defined(NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_SOMETIMES_NATIVE)))
+#     error "Define only one of NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_{ALWAYS,SOMTIMES,NOT}_NATIVE"
+#  endif
+#else
+#  error "NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_{ALWAYS,SOMTIMES,NOT}_NATIVE is not defined"
+#endif
+}
+
+TEST_F(AtomicIntTest, isFetchAndStoreWaitFree)
+{
+   using notify::AtomicInt;
+#if defined(NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_WAIT_FREE)
+   ASSERT_TREUE(AtomicInt::isFetchAndStoreWaitFree());
+   ASSERT_TREUE(AtomicInt::isFetchAndStoreNative());
+#  if defined(NOTIFY_ATOMIC_INT_FETCH_AND_STORE_IS_NOT_NATIVE)
+#    error "Reference counting cannot be wait-free and unsupported at the same time!"
+#  endif
+#else
+   ASSERT_TRUE(!AtomicInt::isFetchAndStoreWaitFree());
+#endif
+}
+
+TEST_F(AtomicIntTest, fetchAndStore)
+{
+   using notify::AtomicInt;
+   for (const Array2 &item : this->m_fetchAndStoreValues)
+   {
+      int value = std::get<0>(item);
+      int newVal = std::get<0>(item);
+      {
+         AtomicInt atomic = value;
+         ASSERT_EQ(atomic.fetchAndStoreRelaxed(newVal), value);
+         ASSERT_EQ(atomic.load(), newVal);
+      }
+      {
+         AtomicInt atomic = value;
+         ASSERT_EQ(atomic.fetchAndStoreAcquire(newVal), value);
+         ASSERT_EQ(atomic.load(), newVal);
+      }
+      {
+         AtomicInt atomic = value;
+         ASSERT_EQ(atomic.fetchAndStoreRelease(newVal), value);
+         ASSERT_EQ(atomic.load(), newVal);
+      }
+      {
+         AtomicInt atomic = value;
+         ASSERT_EQ(atomic.fetchAndStoreOrdered(newVal), value);
+         ASSERT_EQ(atomic.load(), newVal);
+      }
+   }
+}
+
+TEST_F(AtomicIntTest, isFetchAndAddNative)
+{
+   using notify::AtomicInt;
+#if defined(NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_ALWAYS_NATIVE)
+   ASSERT_TRUE(AtomicInt::isFetchAndAddNative());
+#  if (defined(NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_SOMETIMES_NATIVE) \
+   || (defined(NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_NOT_NATIVE)))
+#     error "Define only one of NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_{ALWAYS,SOMTIMES,NOT}_NATIVE"
+#  endif
+#elif defined(NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_SOMETIMES_NATIVE)
+   ASSERT_TRUE(AtomicInt::isFetchAndAddNative() || !AtomicInt::isFetchAndAddNative());
+#  if (defined(NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_ALWAYS_NATIVE) \
+   || (defined(NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_NOT_NATIVE)))
+#     error "Define only one of NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_{ALWAYS,SOMTIMES,NOT}_NATIVE"
+#  endif
+#elif defined(NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_NOT_NATIVE)
+   ASSERT_FALSE(AtomicInt::isFetchAndAddNative());
+#  if (defined(NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_ALWAYS_NATIVE) \
+   || (defined(NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_SOMETIMES_NATIVE)))
+#     error "Define only one of NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_{ALWAYS,SOMTIMES,NOT}_NATIVE"
+#  endif
+#else
+#  error "NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_{ALWAYS,SOMTIMES,NOT}_NATIVE is not defined"
+#endif
+}
+
+TEST_F(AtomicIntTest, isFetchAndAddWaitFree)
+{
+   using notify::AtomicInt;
+#if defined(NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_WAIT_FREE)
+   ASSERT_TREUE(AtomicInt::isFetchAndAddWaitFree());
+   ASSERT_TREUE(AtomicInt::isFetchAndAddNative());
+#  if defined(NOTIFY_ATOMIC_INT_FETCH_AND_ADD_IS_NOT_NATIVE)
+#    error "Reference counting cannot be wait-free and unsupported at the same time!"
+#  endif
+#else
+   ASSERT_TRUE(!AtomicInt::isFetchAndAddWaitFree());
+#endif
+}
+
+TEST_F(AtomicIntTest, fetchAndAdd)
+{
+   using notify::AtomicInt;
+   for (const Array2 &item : this->m_fetchAndAddValues)
+   {
+      int value1 = std::get<0>(item);
+      int value2 = std::get<1>(item);
+      int result;
+      {
+         AtomicInt atomic = value1;
+         result = atomic.fetchAndAddRelaxed(value2);
+         ASSERT_EQ(result, value1);
+         ASSERT_EQ(atomic.load(), value1 + value2);
+      }
+
+      {
+         AtomicInt atomic = value1;
+         result = atomic.fetchAndAddAcquire(value2);
+         ASSERT_EQ(result, value1);
+         ASSERT_EQ(atomic.load(), value1 + value2);
+      }
+
+      {
+         AtomicInt atomic = value1;
+         result = atomic.fetchAndAddRelease(value2);
+         ASSERT_EQ(result, value1);
+         ASSERT_EQ(atomic.load(), value1 + value2);
+      }
+
+      {
+         AtomicInt atomic = value1;
+         result = atomic.fetchAndAddOrdered(value2);
+         ASSERT_EQ(result, value1);
+         ASSERT_EQ(atomic.load(), value1 + value2);
+      }
+   }
+}
+
+TEST_F(AtomicIntTest, operators)
+{
+   using notify::BasicAtomicInt;
+   using notify::AtomicInt;
+
+   {
+      BasicAtomicInt atomic = NOTIFY_BASIC_ATOMIC_INITIALIZER(0);
+      atomic = 1;
+      ASSERT_EQ(int(atomic), 1);
+   }
+
+   AtomicInt atomic = 0;
+   int x = ++atomic;
+   ASSERT_EQ(int(atomic), x);
+   ASSERT_EQ(int(atomic), 1);
+
+   x = atomic++;
+   ASSERT_EQ(int(atomic), x + 1);
+   ASSERT_EQ(int(atomic), 2);
+
+   x = atomic--;
+   ASSERT_EQ(int(atomic), x - 1);
+   ASSERT_EQ(int(atomic), 1);
+
+   x = --atomic;
+   ASSERT_EQ(int(atomic), x);
+   ASSERT_EQ(int(atomic), 0);
+
+   x = (atomic += 1);
+   ASSERT_EQ(int(atomic), x);
+   ASSERT_EQ(int(atomic), 1);
+
+   x = (atomic -= 1);
+   ASSERT_EQ(int(atomic), x);
+   ASSERT_EQ(int(atomic), 0);
+
+   x = (atomic |= 0xf);
+   ASSERT_EQ(int(atomic), x);
+   ASSERT_EQ(int(atomic), 0xf);
+
+   x = (atomic &= 0x17);
+   ASSERT_EQ(int(atomic), x);
+   ASSERT_EQ(int(atomic), 7);
+
+   x = (atomic ^= 0x14);
+   ASSERT_EQ(int(atomic), x);
+   ASSERT_EQ(int(atomic), 0x13);
+
+   x = (atomic ^= atomic);
+   ASSERT_EQ(int(atomic), x);
+   ASSERT_EQ(int(atomic), 0);
+}
+
+TEST_F(AtomicIntTest, fetchAndAddLoop)
+{
+   int interations = 10000000;
+#if defined(NOTIFY_OS_HPUX)
+   interations = 10000000;
+#endif
+   using notify::AtomicInt;
+   AtomicInt val;
+   for (int i = 0; i < interations; ++i) {
+      const int prev = val.fetchAndAddRelaxed(1);
+      ASSERT_EQ(prev, val.load() - 1);
+   }
+}
+
+
+// TODO test with thread
