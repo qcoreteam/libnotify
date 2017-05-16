@@ -12,7 +12,6 @@
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Created by zzu_softboy on 24/04/2017.
-
 #ifndef NOTIFY_KERNEL_GLOBAL_H
 # include "notify/kernel/Global.h"
 #endif
@@ -80,7 +79,7 @@
 #elif !defined(SAG_COM) && (!defined(WINAPI_FAMILY) || WINAPI_FAMILY==WINAPI_FAMILY_DESKTOP_APP) && (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))
 #  define NOTIFY_OS_WIN32
 #  define NOTIFY_OS_WIN64
-#elif !defined(SAG_COM) && (!defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__))
+#elif !defined(SAG_COM) && (defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__))
 #  if defined(WINAPI_FAMILY)
 #     ifndef WINAPI_FAMILY_PC_APP
 #        define WINAPI_FAMILY_PC_APP WINAPI_FAMILY_APP

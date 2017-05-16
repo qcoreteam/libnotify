@@ -352,38 +352,38 @@ class BasicAtomicPointer
 {
 public:
    typedef T *Type;
-   typedef threadinternal::AtomicOps<T> OpsCls;
+   typedef threadinternal::AtomicOps<Type> OpsCls;
    typedef typename OpsCls::AtomicType AtomicType;
    AtomicType m_atomicValue;
 
-   AtomicType load() const NOTIFY_DECL_NOEXCEPT
+   Type load() const NOTIFY_DECL_NOEXCEPT
    {
       OpsCls::load(m_atomicValue);
    }
 
-   void store(AtomicType newValue) NOTIFY_DECL_NOEXCEPT
+   void store(Type newValue) NOTIFY_DECL_NOEXCEPT
    {
       OpsCls::store(m_atomicValue, newValue);
    }
 
-   operator AtomicType() const NOTIFY_DECL_NOEXCEPT
+   operator Type() const NOTIFY_DECL_NOEXCEPT
    {
       return loadAcquire();
    }
 
-   AtomicType operator=(AtomicType newValue)
+   Type operator=(Type newValue)
    {
       storeRelease(newValue);
       return newValue;
    }
 
    // Atomic API, implemented in AtomicCxx11.h
-   AtomicType loadAcquire() const NOTIFY_DECL_NOEXCEPT
+   Type loadAcquire() const NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::loadAcquire(m_atomicValue);
    }
 
-   void storeRelease(AtomicType newValue) NOTIFY_DECL_NOEXCEPT
+   void storeRelease(Type newValue) NOTIFY_DECL_NOEXCEPT
    {
       OpsCls::storeRelease(m_atomicValue, newValue);
    }
@@ -398,50 +398,50 @@ public:
       return OpsCls::isTestAndSetWaitFree();
    }
 
-   bool testAndSetRelaxed(AtomicType expectedValue, AtomicType newValue) NOTIFY_DECL_NOEXCEPT
+   bool testAndSetRelaxed(Type expectedValue, Type newValue) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::testAndSetRelaxed(m_atomicValue, expectedValue, newValue);
    }
 
-   bool testAndSetAcquire(AtomicType expectedValue, AtomicType newValue) NOTIFY_DECL_NOEXCEPT
+   bool testAndSetAcquire(Type expectedValue, Type newValue) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::testAndSetAcquire(m_atomicValue, expectedValue, newValue);
    }
 
-   bool testAndSetRelease(AtomicType expectedValue, AtomicType newValue) NOTIFY_DECL_NOEXCEPT
+   bool testAndSetRelease(Type expectedValue, Type newValue) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::testAndSetRelease(m_atomicValue, expectedValue, newValue);
    }
 
-   bool testAndSetOrdered(AtomicType expectedValue, AtomicType newValue) NOTIFY_DECL_NOEXCEPT
+   bool testAndSetOrdered(Type expectedValue, Type newValue) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::testAndSetOrdered(m_atomicValue, expectedValue, newValue);
    }
 
-   bool testAndSetRelaxed(AtomicType expectedValue,
-                          AtomicType newValue,
-                          AtomicType &currentValue) NOTIFY_DECL_NOEXCEPT
+   bool testAndSetRelaxed(Type expectedValue,
+                          Type newValue,
+                          Type &currentValue) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::testAndSetRelaxed(m_atomicValue, expectedValue, newValue, &currentValue);
    }
 
-   bool testAndSetAcquire(AtomicType expectedValue,
-                          AtomicType newValue,
-                          AtomicType &currentValue) NOTIFY_DECL_NOEXCEPT
+   bool testAndSetAcquire(Type expectedValue,
+                          Type newValue,
+                          Type &currentValue) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::testAndSetAcquire(m_atomicValue, expectedValue, newValue, &currentValue);
    }
 
-   bool testAndSetRelease(AtomicType expectedValue,
-                          AtomicType newValue,
-                          AtomicType &currentValue) NOTIFY_DECL_NOEXCEPT
+   bool testAndSetRelease(Type expectedValue,
+                          Type newValue,
+                          Type &currentValue) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::testAndSetRelease(m_atomicValue, expectedValue, newValue, &currentValue);
    }
 
-   bool testAndSetOrdered(AtomicType expectedValue,
-                          AtomicType newValue,
-                          AtomicType &currentValue) NOTIFY_DECL_NOEXCEPT
+   bool testAndSetOrdered(Type expectedValue,
+                          Type newValue,
+                          Type &currentValue) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::testAndSetOrdered(m_atomicValue, expectedValue, newValue, &currentValue);
    }
@@ -456,22 +456,22 @@ public:
       return OpsCls::isFetchAndStoreWaitFree();
    }
 
-   AtomicType fetchAndStoreRelaxed(AtomicType newValue) NOTIFY_DECL_NOEXCEPT
+   Type fetchAndStoreRelaxed(Type newValue) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndStoreRelaxed(m_atomicValue, newValue);
    }
 
-   AtomicType fetchAndStoreAcquire(AtomicType newValue) NOTIFY_DECL_NOEXCEPT
+   Type fetchAndStoreAcquire(Type newValue) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndStoreAcquire(m_atomicValue, newValue);
    }
 
-   AtomicType fetchAndStoreRelease(AtomicType newValue) NOTIFY_DECL_NOEXCEPT
+   Type fetchAndStoreRelease(Type newValue) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndStoreRelease(m_atomicValue, newValue);
    }
 
-   AtomicType fetchAndStoreOrdered(AtomicType newValue) NOTIFY_DECL_NOEXCEPT
+   Type fetchAndStoreOrdered(Type newValue) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndStoreOrdered(m_atomicValue, newValue);
    }
@@ -486,79 +486,79 @@ public:
       return OpsCls::isFetchAndAddWaitFree();
    }
 
-   AtomicType fetchAndAddRelaxed(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
+   Type fetchAndAddRelaxed(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndAddRelaxed(m_atomicValue, valueToAdd);
    }
 
-   AtomicType fetchAndAddAcquire(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
+   Type fetchAndAddAcquire(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndAddAcquire(m_atomicValue, valueToAdd);
    }
 
-   AtomicType fetchAndAddRelease(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
+   Type fetchAndAddRelease(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndAddRelease(m_atomicValue, valueToAdd);
    }
 
-   AtomicType fetchAndAddOrdered(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
+   Type fetchAndAddOrdered(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndAddOrdered(m_atomicValue, valueToAdd);
    }
 
-   AtomicType fetchAndSubRelaxed(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
+   Type fetchAndSubRelaxed(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndSubRelaxed(m_atomicValue, valueToAdd);
    }
 
-   AtomicType fetchAndSubAcquire(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
+   Type fetchAndSubAcquire(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndSubAcquire(m_atomicValue, valueToAdd);
    }
 
-   AtomicType fetchAndSubRelease(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
+   Type fetchAndSubRelease(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndSubRelease(m_atomicValue, valueToAdd);
    }
 
-   AtomicType fetchAndSubOrdered(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
+   Type fetchAndSubOrdered(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
    {
       return OpsCls::fetchAndSubOrdered(m_atomicValue, valueToAdd);
    }
 
-   AtomicType operator++() NOTIFY_DECL_NOEXCEPT
+   Type operator++() NOTIFY_DECL_NOEXCEPT
    {
       return fetchAndAddOrdered(1) + 1;
    }
 
-   AtomicType operator++(int) NOTIFY_DECL_NOEXCEPT
+   Type operator++(int) NOTIFY_DECL_NOEXCEPT
    {
       return fetchAndAddOrdered(1);
    }
 
-   AtomicType operator--() NOTIFY_DECL_NOEXCEPT
+   Type operator--() NOTIFY_DECL_NOEXCEPT
    {
       return fetchAndSubOrdered(1) - 1;
    }
 
-   AtomicType operator--(int) NOTIFY_DECL_NOEXCEPT
+   Type operator--(int) NOTIFY_DECL_NOEXCEPT
    {
       return fetchAndSubOrdered(1);
    }
 
-   AtomicType operator+=(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
+   Type operator+=(n_ptrdiff valueToAdd) NOTIFY_DECL_NOEXCEPT
    {
       return fetchAndAddOrdered(valueToAdd) + valueToAdd;
    }
 
-   AtomicType operator-=(n_ptrdiff valueToSub) NOTIFY_DECL_NOEXCEPT
+   Type operator-=(n_ptrdiff valueToSub) NOTIFY_DECL_NOEXCEPT
    {
       return fetchAndSubOrdered(valueToSub) - valueToSub;
    }
 
 #ifdef NOTIFY_BASIC_ATOMIC_HAS_CONSTRUCTORS
    BasicAtomicPointer() = default;
-   constexpr BasicAtomicPointer(AtomicType value) NOTIFY_DECL_NOEXCEPT : m_atomicValue(value)
+   constexpr BasicAtomicPointer(Type value) NOTIFY_DECL_NOEXCEPT : m_atomicValue(value)
    {}
    BasicAtomicPointer(const BasicAtomicPointer &) = delete;
    BasicAtomicPointer &operator=(const BasicAtomicPointer &) = delete;

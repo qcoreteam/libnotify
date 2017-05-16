@@ -188,4 +188,6 @@ using HANDLE = void *;
    Class(const Class &) NOTIFY_DECL_EQ_DELETE;\
    Class &operator=(const Class &) NOTIFY_DECL_EQ_DELETE;
 
+#define NOTIFY_ASSERT(x) (x);
+
 #endif //NOTIFY_KERNEL_GLOBAL_H

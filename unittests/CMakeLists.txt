@@ -1,9 +1,10 @@
 add_custom_target(UnitTests)
 set_target_properties(UnitTests PROPERTIES FOLDER "UnitTests")
 set(TEST_SRCS
-    EventMgrTest.cpp
-    FlagsTest.cpp
-    VersionTest.cpp
-    thread/AtomicIntegerTest.cpp
-    thread/AtomicIntTest.cpp)
+      EventMgrTest.cpp
+      FlagsTest.cpp
+      VersionTest.cpp
+      thread/AtomicIntegerTest.cpp
+      thread/AtomicIntTest.cpp
+      thread/MutexTest.cpp)
 notify_add_unittest(UnitTests KernelTest ${TEST_SRCS})

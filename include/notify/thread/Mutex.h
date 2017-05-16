@@ -25,7 +25,7 @@
 #  include <limits>
 #endif
 
-#if NOTIFY_OS_LINUX
+#if defined(NOTIFY_OS_LINUX)
 #  define NOTIFY_MUTEX_LOCK_NOEXCEPT NOTIFY_DECL_NOEXCEPT
 #else
 #  define NOTIFY_MUTEX_LOCK_NOEXCEPT
@@ -108,7 +108,7 @@ public:
    explicit Mutex(RecursiveMode mode = RecursiveMode::NonRecursive);
    ~Mutex();
 
-   void lock NOTIFY_MUTEX_LOCK_NOEXCEPT;
+   void lock() NOTIFY_MUTEX_LOCK_NOEXCEPT;
    bool tryLock(int timeoout = 0) NOTIFY_MUTEX_LOCK_NOEXCEPT;
    void unlock() NOTIFY_DECL_NOEXCEPT;
 

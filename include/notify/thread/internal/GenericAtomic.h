@@ -13,8 +13,8 @@
 //
 // Created by zzu_softboy on 09/05/2017.
 
-#ifndef NOTIFY_THREAD_GENERICATOMIC_H
-#define NOTIFY_THREAD_GENERICATOMIC_H
+#ifndef NOTIFY_THREAD_INTERNAL_GENERICATOMIC_H
+#define NOTIFY_THREAD_INTERNAL_GENERICATOMIC_H
 
 #include "notify/kernel/Global.h"
 
@@ -462,4 +462,4 @@ struct GenericAtomicOps
 } // notify
 
 
-#endif // NOTIFY_THREAD_GENERICATOMIC_H
+#endif // NOTIFY_THREAD_INTERNAL_GENERICATOMIC_H
