@@ -181,4 +181,11 @@ using HANDLE = void *;
 #  define NOTIFY_ALWAYS_INLINE inline
 #endif
 
+// Some classes do not permit copies to be made of an object. These
+// classes contains a private copy constructor and assignment
+// operator to disable copying (the compiler gives an error message).
+#define NOTIFY_DISALE_COPY(Class) \
+   Class(const Class &) NOTIFY_DECL_EQ_DELETE;\
+   Class &operator=(const Class &) NOTIFY_DECL_EQ_DELETE;
+
 #endif //NOTIFY_KERNEL_GLOBAL_H
