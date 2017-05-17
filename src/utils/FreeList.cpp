@@ -11,28 +11,5 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 // THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Created by softboy on 5/8/17.
+// Created by zzu_softboy on 17/05/2017.
 
-#ifndef NOTIFY_THREAD_THREAD_H
-#define NOTIFY_THREAD_THREAD_H
-
-#include <limits.h>
-#include "notify/kernel/Global.h"
-
-namespace notify
-{
-
-class ThreadData;
-class ThreadPrivate;
-
-class Thread
-{
-public:
-   static notify::HANDLE currentThreadId() NOTIFY_DECL_NOEXCEPT NOTIFY_DECL_PURE_FUNCTION;
-   static Thread *currentThread();
-   static int idealThreadCount() NOTIFY_DECL_NOEXCEPT;
-};
-
-} // notify
-
-#endif //NOTIFY_THREAD_THREAD_H

@@ -36,4 +36,7 @@
 // Define if kqueue works correctly with pipes
 #cmakedefine NOTIFY_HAVE_WORKING_KQUEUE 1
 
+// Define if we have pthreads on this system
+#cmakedefine NOTIFY_HAVE_PTHREAD_H 1
+
 #endif //NOTIFY_KERNEL_CONFIG_H

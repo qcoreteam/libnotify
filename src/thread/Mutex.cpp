@@ -16,9 +16,17 @@
 
 #include "notify/kernel/Global.h"
 #include "notify/thread/Mutex.h"
+#include "notify/thread/internal/MutexPrivate.h"
 
 namespace notify
 {
 
 } // notify
 
+#ifdef NOTIFY_LINUX_FUTEX
+#  include "MutexLinux.cpp"
+#elif defined(NOTIFY_OS_MAC)
+#  include "MutexMac.cpp"
+#else
+#  include "MutexUnix.cpp"
+#endif
