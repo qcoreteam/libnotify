@@ -18,6 +18,9 @@
 #     define NOTIFY_UNIX_SEMAPHORE
 #  endif
 #endif
+#if defined(NOTIFY_OS_UNIX) && defined(NOTIFY_HAVE_PTHREAD_H)
+#  include <pthread.h>
+#endif
 
 namespace notify
 {
@@ -47,7 +50,7 @@ public:
 
    bool ref()
    {
-      NOTIFY_ASSERT(m_refCount.load() >= 0);
+      // NOTIFY_ASSERT(m_refCount.load() >= 0);
       int c;
       do {
          c = m_refCount.load();
@@ -55,18 +58,18 @@ public:
             return false;
          }
       } while (!m_refCount.testAndSetRelaxed(c, c + 1));
-      NOTIFY_ASSERT(m_refCount.load() >= 0);
+      // NOTIFY_ASSERT(m_refCount.load() >= 0);
       return true;
    }
 
    void deref()
    {
-      NOTIFY_ASSERT(m_refCount.load() >= 0);
+      // NOTIFY_ASSERT(m_refCount.load() >= 0);
       if (!m_refCount.deref())
       {
          release();
       }
-      NOTIFY_ASSERT(m_refCount.load() >= 0);
+      // NOTIFY_ASSERT(m_refCount.load() >= 0);
    }
    void release();
    static MutexPrivate *allocate();
