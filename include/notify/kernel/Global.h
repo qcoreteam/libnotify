@@ -136,6 +136,8 @@ template <> struct NIntegerForSize<16>
    __extension__ using Unsigned = unsigned __int128;
    __extension__ using Signed = __int128;
 };
+#endif
+
 template <typename T> struct NIntegerForSizeof : NIntegerForSize<sizeof(T)>
 {};
 using n_registerint = NIntegerForSize<NOTIFY_PROCESSOR_WORDSIZE>::Signed;
@@ -143,7 +145,7 @@ using n_registeruint = NIntegerForSize<NOTIFY_PROCESSOR_WORDSIZE>::Unsigned;
 using n_uintptr = NIntegerForSizeof<void*>::Unsigned;
 using n_ptrdiff = NIntegerForSizeof<void*>::Signed;
 using n_intptr = n_ptrdiff;
-#endif
+
 
 namespace internal
 {

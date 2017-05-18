@@ -264,7 +264,7 @@
 #  define NOTIFY_POINTER_SIZE 4
 #endif
 
-// Define Q_PROCESSOR_WORDSIZE to be the size of the machine's word (usually,
+// Define NOTIFY_PROCESSOR_WORDSIZE to be the size of the machine's word (usually,
 // the size of the register). On some architectures where a pointer could be
 // smaller than the register, the macro is defined above.
 // Falls back to QT_POINTER_SIZE if not set explicitly for the platform.
